@@ -31,3 +31,33 @@ export function createRabbit() {
   part(body,gold,[.072,.072,.022],[.13,.44,.235]);
   return { root, head };
 }
+
+export function animateRabbit(rig, chase, reducedMotion) {
+  const { state, age, foundAge } = chase;
+  const appearing = state === 'APPEAR' || state === 'REAPPEAR';
+  const progress = appearing ? Math.min(age/.7,1) : 1;
+  const scale = .2 + .8*(1-(1-progress)**3);
+  rig.root.visible=chase.visible;
+  rig.root.scale.setScalar(scale*.65);
+  const hop = reducedMotion ? 0 : state==='RUN' ? Math.abs(Math.sin(age*11))*.10 : appearing ? Math.sin(progress*Math.PI)*.14 : foundAge<.5 ? Math.sin(foundAge/.5*Math.PI)*.15 : Math.sin(age*2)*.018;
+  rig.root.position.y=-.43+hop;
+  rig.root.rotation.y=state==='RUN' ? -.65 : Math.sin(age*1.8)*.16;
+  rig.head.rotation.y=state==='WAIT' ? Math.sin(age*2.2)*.28 : 0;
+  rig.head.rotation.x=state==='WAIT' ? Math.max(0,Math.sin(age*3))*.25 : 0;
+}
+
+export function animateDoorRabbit(rig,pose,reduced){
+  const {state,age}=pose;
+  rig.head.rotation.set(0,0,0);
+  rig.root.visible=state==='DOOR_APPEARING'||state==='RABBIT_ENTERING';
+  if(!rig.root.visible)return;
+  rig.root.position.set(0,-.43,0);rig.root.scale.setScalar(.65);
+  if(state==='DOOR_APPEARING'){rig.root.rotation.y=-.4;return;}
+  // Look at the door, look back, run, pause on the threshold, enter.
+  if(age<1){rig.head.rotation.y=age<.5?-.6:.35;return;}
+  const travel=Math.min((age-1)/1.3,1);const eased=travel*travel*(3-2*travel);
+  const entering=Math.max(0,Math.min((age-2.7)/.9,1));
+  rig.root.position.set(.12*eased,-.43-.18*eased+(reduced?0:Math.sin(travel*Math.PI*5)**2*.025),-.42*eased-.14*entering);
+  rig.root.scale.setScalar((.65-.37*eased)*(1-entering));
+  rig.root.rotation.y=age<2.3?Math.PI*.85:age<2.7?0:Math.PI;
+}
