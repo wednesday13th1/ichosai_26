@@ -1,62 +1,25 @@
-import { createARLayer, cameraErrorMessage } from './ar.js';
-import { createInteraction } from './interaction.js';
-const video=document.querySelector('#camera');
-const entry=document.querySelector('#entry');
-const enter=document.querySelector('#enter');
-const hud=document.querySelector('#hud');
-const status=document.querySelector('#status');
-const surface=document.querySelector('#experience');
-const follow=document.querySelector('.follow');
-const care=document.querySelector('.care');
-const searchHint=document.querySelector('#search-hint');
-const unsupported=document.querySelector('#device-unsupported');
-const ua=navigator.userAgent;
-const mobileDevice=/Android|iPhone|iPad|iPod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+import {createARLayer,cameraErrorMessage} from './ar.js';
+import {createInteraction} from './interaction.js';
+const $=selector=>document.querySelector(selector);
+const video=$('#camera'),entry=$('#entry'),enter=$('#enter'),hud=$('#hud'),status=$('#status'),surface=$('#experience'),follow=$('.follow'),care=$('.care'),searchHint=$('#search-hint'),unsupported=$('#device-unsupported'),shutter=$('#shutter'),switchCamera=$('#switch-camera'),lastPhoto=$('#last-photo'),preview=$('#photo-preview'),photo=$('#captured-photo'),flash=$('#flash');
+const ua=navigator.userAgent,mobileDevice=/Android|iPhone|iPad|iPod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 if(!mobileDevice){entry.hidden=true;unsupported.hidden=false;}
-const interaction=createInteraction(surface,mode=>{
-  searchHint.textContent=mode==='touch'?'そのままカメラを向けてみて（スワイプでも見渡せます）':'そのままカメラを向けてみて';
-});
-let layer, stream, generation=0, starting=false;
-function stop(message='カメラを許可して、Wonderlandへ。') {
-  generation++;starting=false;interaction.stop();
-  if(stream)stream.getTracks().forEach(track=>track.stop());
-  stream=null;video.pause();video.srcObject=null;layer?.stop();
-  delete surface.dataset.phaseState;
-  document.body.classList.remove('active');entry.hidden=false;hud.hidden=true;
-  enter.disabled=false;enter.innerHTML='Enter Wonderland <span aria-hidden="true">↗</span>';status.textContent=message;
-}
-function ensureLayer(){
-  if(!layer)layer=createARLayer(document.querySelector('#ar-layer'),()=>{
-    stop('表示が中断されました。もう一度ボタンを押してください。');
-    layer?.dispose();layer=null;
-  },interaction,progress=>{
-    if(follow.textContent!==progress.message)follow.textContent=progress.message;
-    care.hidden=!progress.safety;
-    if(surface.dataset.phaseState!==progress.state){
-      surface.dataset.phaseState=progress.state;
-      surface.dispatchEvent(new CustomEvent('phasestatechange',{detail:{state:progress.state}}));
-    }
-  });
-}
+const interaction=createInteraction(surface,mode=>{searchHint.textContent=mode==='touch'?'スワイプして周りを見渡せます':'そのまま周りを見てみて';});
+let layer,stream,generation=0,starting=false,switching=false,facingMode='environment',photoUrl='';
+
+function stopTracks(){if(stream)stream.getTracks().forEach(track=>track.stop());stream=null;video.pause();video.srcObject=null;}
+async function openCamera(mode,request){stopTracks();const result=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:mode},width:{ideal:1920},height:{ideal:1080}}});if(request!==generation){result.getTracks().forEach(t=>t.stop());return false;}stream=result;video.srcObject=stream;video.muted=true;await video.play();video.classList.toggle('mirrored',mode==='user');stream.getVideoTracks().forEach(track=>track.addEventListener('ended',()=>{if(!switching)stop('カメラが中断されました。もう一度開始してください。');},{once:true}));return true;}
+function closePreview(){preview.hidden=true;hud.hidden=false;}
+function stop(message='カメラを許可して、Wonderlandへ。'){generation++;starting=false;switching=false;interaction.stop();stopTracks();layer?.stop();closePreview();delete surface.dataset.phaseState;document.body.classList.remove('active');entry.hidden=!mobileDevice;hud.hidden=true;enter.disabled=false;enter.innerHTML='Enter Wonderland <span aria-hidden="true">↗</span>';status.textContent=message;}
+function ensureLayer(){if(!layer)layer=createARLayer($('#ar-layer'),()=>{stop('表示が中断されました。もう一度ボタンを押してください。');layer?.dispose();layer=null;},interaction,progress=>{if(follow.textContent!==progress.message)follow.textContent=progress.message;care.hidden=!progress.safety;if(surface.dataset.phaseState!==progress.state){surface.dataset.phaseState=progress.state;surface.dispatchEvent(new CustomEvent('phasestatechange',{detail:{state:progress.state}}));}});}
 if(mobileDevice){try{ensureLayer();}catch{status.textContent='ボタンを押して、体験を開始してください。';}}
-enter.addEventListener('click',async()=>{
-  if(starting)return;
-  if(!window.isSecureContext){status.textContent='カメラを使うにはHTTPSのURLで開いてください。';return;}
-  if(!navigator.mediaDevices?.getUserMedia){status.textContent='SafariまたはChromeで、このページを開いてください。';return;}
-  try{ensureLayer();}catch{status.textContent='3D表示を開始できません。ブラウザを更新して、もう一度お試しください。';return;}
-  starting=true;const request=++generation;enter.disabled=true;status.textContent='動きとカメラの使用を許可してください…';
-  const motionPermission=interaction.requestPermission();
-  try {
-    await motionPermission;
-    if(request!==generation)return;
-    const result=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}});
-    if(request!==generation){result.getTracks().forEach(t=>t.stop());return;}
-    stream=result;video.srcObject=stream;video.muted=true;await video.play();
-    if(request!==generation)return;
-    stream.getVideoTracks().forEach(track=>track.addEventListener('ended',()=>stop('カメラが中断されました。もう一度開始してください。'),{once:true}));
-    interaction.start();layer.start();entry.hidden=true;hud.hidden=false;document.body.classList.add('active');starting=false;document.querySelector('#exit').focus();
-  }catch(error){if(request===generation)stop(cameraErrorMessage(error));}
-});
-document.querySelector('#exit').addEventListener('click',()=>{stop();enter.focus();});
-window.addEventListener('pagehide',()=>stop());
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&(stream||starting))stop('おかえりなさい。ボタンを押して再開できます。');});
+
+enter.addEventListener('click',async()=>{if(starting)return;if(!window.isSecureContext){status.textContent='カメラを使うにはHTTPSのURLで開いてください。';return;}if(!navigator.mediaDevices?.getUserMedia){status.textContent='SafariまたはChromeで、このページを開いてください。';return;}try{ensureLayer();}catch{status.textContent='3D表示を開始できません。ブラウザを更新してください。';return;}starting=true;const request=++generation;enter.disabled=true;status.textContent='動きとカメラの使用を許可してください…';try{await interaction.requestPermission();if(request!==generation)return;if(!await openCamera(facingMode,request))return;interaction.start();layer.start();entry.hidden=true;hud.hidden=false;document.body.classList.add('active');starting=false;}catch(error){if(request===generation)stop(cameraErrorMessage(error));}});
+
+switchCamera.addEventListener('click',async()=>{if(switching)return;switching=true;switchCamera.disabled=true;const previous=facingMode,next=previous==='environment'?'user':'environment',request=++generation;try{if(await openCamera(next,request))facingMode=next;}catch(error){facingMode=previous;try{await openCamera(previous,request);}catch{stop(cameraErrorMessage(error));}}finally{switching=false;switchCamera.disabled=false;}});
+
+function drawCover(ctx,source,sw,sh,w,h,mirror=false){const scale=Math.max(w/sw,h/sh),dw=sw*scale,dh=sh*scale,dx=(w-dw)/2,dy=(h-dh)/2;ctx.save();if(mirror){ctx.translate(w,0);ctx.scale(-1,1);ctx.drawImage(source,dx,dy,dw,dh);}else ctx.drawImage(source,dx,dy,dw,dh);ctx.restore();}
+function drawFrame(ctx,w,h){const s=Math.max(2,Math.round(w*.006)),m=Math.round(w*.025);ctx.strokeStyle='rgba(200,170,109,.72)';ctx.lineWidth=s;ctx.strokeRect(m,m,w-2*m,h-2*m);ctx.strokeStyle='rgba(238,228,204,.35)';ctx.lineWidth=Math.max(1,s/2);ctx.strokeRect(m+s*2,m+s*2,w-2*(m+s*2),h-2*(m+s*2));ctx.fillStyle='#eee4cc';ctx.font=`600 ${Math.round(w*.045)}px Georgia`;ctx.fillText('A ♠',m*1.7,m*2.8);ctx.textAlign='right';ctx.fillStyle='#8f263c';ctx.fillText('Q ♥',w-m*1.7,h-m*1.7);ctx.textAlign='left';ctx.font=`600 ${Math.round(w*.018)}px Arial`;ctx.letterSpacing=`${Math.round(w*.004)}px`;ctx.fillStyle='#eee4cc';ctx.fillText('DRINK ME',m*1.7,h-m*1.8);}
+function capture(){if(!stream||!video.videoWidth)return;shutter.classList.add('pressed');flash.classList.remove('fire');void flash.offsetWidth;flash.classList.add('fire');setTimeout(()=>shutter.classList.remove('pressed'),180);const rect=surface.getBoundingClientRect(),ratio=Math.min(2,1600/Math.max(rect.width,rect.height)),canvas=document.createElement('canvas');canvas.width=Math.round(rect.width*ratio);canvas.height=Math.round(rect.height*ratio);const ctx=canvas.getContext('2d');drawCover(ctx,video,video.videoWidth,video.videoHeight,canvas.width,canvas.height,facingMode==='user');const ar=$('#ar-layer canvas');if(ar)ctx.drawImage(ar,0,0,canvas.width,canvas.height);drawFrame(ctx,canvas.width,canvas.height);canvas.toBlob(blob=>{if(!blob)return;if(photoUrl)URL.revokeObjectURL(photoUrl);photoUrl=URL.createObjectURL(blob);photo.src=photoUrl;lastPhoto.style.backgroundImage=`url(${photoUrl})`;lastPhoto.disabled=false;hud.hidden=true;preview.hidden=false;},'image/jpeg',.92);}
+shutter.addEventListener('click',capture);lastPhoto.addEventListener('click',()=>{if(photoUrl){photo.src=photoUrl;hud.hidden=true;preview.hidden=false;}});$('#retake').addEventListener('click',closePreview);$('#save-photo').addEventListener('click',()=>{if(!photoUrl)return;const a=document.createElement('a');a.href=photoUrl;a.download=`wonderland-${new Date().toISOString().slice(0,10)}.jpg`;a.click();});$('#exit').addEventListener('click',()=>{stop();enter.focus();});
+window.addEventListener('pagehide',()=>{if(photoUrl)URL.revokeObjectURL(photoUrl);stop();});document.addEventListener('visibilitychange',()=>{if(document.hidden&&(stream||starting))stop('おかえりなさい。ボタンを押して再開できます。');});

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {createWonderlandStory} from './scenes.js';
 import {createWonderlandObjects} from './wonderland.js';
 export function createARLayer(container,onContextLost,interaction,onProgress=()=>{}){
- const renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.75));renderer.setClearColor(0,0);container.appendChild(renderer.domElement);
+ const renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power',preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.75));renderer.setClearColor(0,0);container.appendChild(renderer.domElement);
  const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(40,1,.1,20);camera.rotation.order='YXZ';scene.add(new THREE.HemisphereLight(0xffffff,0x5e7a84,2.5));const light=new THREE.DirectionalLight(0xffe4b8,3);light.position.set(-2,4,5);scene.add(light);
  const anchor=new THREE.Group();scene.add(anchor);const wonderland=createWonderlandObjects();anchor.add(wonderland.root);const story=createWonderlandStory();let wonderlandPose=story.snapshot(),active=false,previous=0,lastMessage='',elapsed=0;const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
  function resize(){const{width,height}=container.getBoundingClientRect();renderer.setSize(width,height);camera.aspect=width/Math.max(height,1);camera.updateProjectionMatrix();}const observer=new ResizeObserver(resize);observer.observe(container);resize();const lost=e=>{e.preventDefault();onContextLost();};renderer.domElement.addEventListener('webglcontextlost',lost);
