@@ -24,13 +24,14 @@ export function createDoor() {
   const glow = new THREE.Mesh(new THREE.PlaneGeometry(DOOR_WIDTH+.21,DOOR_HEIGHT+.21),new THREE.MeshBasicMaterial({color:0xdbbf81,transparent:true,opacity:.08,depthWrite:false}));
   glow.position.z=-.055;root.add(glow);
   root.visible=false;
-  return {root,
+  function setOpenAmount(value){hinge.rotation.y=-THREE.MathUtils.clamp(value,0,1)*Math.PI*.57;}
+  return {root,setOpenAmount,
     update(state,age,approach){
       root.visible=!!state;
       const appear=state==='DOOR_APPEARING'?smooth(Math.min(age/1.2,1)):1;
       root.scale.setScalar((.05+.95*appear)*(1+approach*.65));
       const open=state==='DOOR_OPENING'?smooth(Math.min(age/1.2,1)):['PORTAL_VISIBLE','APPROACHING','PORTAL_DISCOVERED'].includes(state)?1:0;
-      hinge.rotation.y=-open*Math.PI*.57;
+      setOpenAmount(open);
       glow.material.opacity=.06+.08*(1-appear);
     }
   };

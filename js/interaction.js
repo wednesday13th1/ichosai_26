@@ -1,9 +1,6 @@
 import * as THREE from 'three';
 
 export const wrapAngle = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
-export function isRabbitCentered(point) {
-  return point.z > -1 && point.z < 1 && Math.abs(point.x) < .38 && Math.abs(point.y) < .5;
-}
 
 // Relative viewing direction only: no position tracking, compass or world anchors.
 export function createInteraction(surface, onModeChange = () => {}) {
@@ -13,7 +10,7 @@ export function createInteraction(surface, onModeChange = () => {}) {
   const screenCorrection = new THREE.Quaternion();
   const forward = new THREE.Vector3();
   const zAxis = new THREE.Vector3(0, 0, 1);
-  let enabled = false, mode = 'touch', baseline = null, portalMode = false;
+  let enabled = false, mode = 'touch', baseline = null;
   let yaw = 0, pitch = 0, offsetYaw = 0, offsetPitch = 0, pointer = null;
   let startedAt = 0, lastSensorAt = 0;
   const rad = THREE.MathUtils.degToRad;
@@ -34,7 +31,7 @@ export function createInteraction(surface, onModeChange = () => {}) {
   }
   function rebase() { baseline = null; offsetYaw = yaw; offsetPitch = pitch; }
   function down(event) {
-    if (!enabled || portalMode || event.target.closest('button') || (mode === 'sensor' && performance.now()-lastSensorAt < 2500)) return;
+    if (!enabled || event.target.closest('button') || (mode === 'sensor' && performance.now()-lastSensorAt < 2500)) return;
     setMode('touch'); pointer={id:event.pointerId,x:event.clientX,y:event.clientY}; surface.setPointerCapture(event.pointerId);
   }
   function move(event) {
@@ -55,25 +52,10 @@ export function createInteraction(surface, onModeChange = () => {}) {
       try { return Promise.resolve(typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function' ? DeviceOrientationEvent.requestPermission() : 'granted').catch(()=>'denied'); }
       catch { return Promise.resolve('denied'); }
     },
-    setPortalMode(value){portalMode=value;pointer=null;},
     get mode(){return mode;},
-    start(){portalMode=false;enabled=true;yaw=0;pitch=0;baseline=null;lastSensorAt=0;startedAt=performance.now();mode='pending';onModeChange(mode);},
+    start(){enabled=true;yaw=0;pitch=0;baseline=null;lastSensorAt=0;startedAt=performance.now();mode='pending';onModeChange(mode);},
     update(){if(enabled && mode!=='touch' && performance.now()-(lastSensorAt||startedAt)>2500){setMode('touch');}return {yaw,pitch};},
     stop(){enabled=false;pointer=null;baseline=null;},
     dispose(){this.stop();window.removeEventListener('deviceorientation',orientation);window.removeEventListener('orientationchange',rebase);window.screen.orientation?.removeEventListener('change',rebase);surface.removeEventListener('pointerdown',down);surface.removeEventListener('pointermove',move);surface.removeEventListener('pointerup',up);surface.removeEventListener('pointercancel',up);}
-  };
-}
-
-// Deliberate gaze dwell, not a physical distance measurement.
-export function createApproachTracker() {
-  let focus=0,progress=0;
-  return {
-    reset(){focus=0;progress=0;},
-    update(dt,point){
-      const visible=point.z>-1&&point.z<1&&Math.abs(point.x)<.45&&Math.abs(point.y)<.55;
-      focus=visible?focus+dt:0;
-      if(visible&&focus>.7)progress=Math.min(1,progress+dt/5);
-      return {visible,focus,progress};
-    }
   };
 }

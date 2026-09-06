@@ -9,16 +9,19 @@ const surface=document.querySelector('#experience');
 const follow=document.querySelector('.follow');
 const care=document.querySelector('.care');
 const searchHint=document.querySelector('#search-hint');
+const unsupported=document.querySelector('#device-unsupported');
+const ua=navigator.userAgent;
+const mobileDevice=/Android|iPhone|iPad|iPod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+if(!mobileDevice){entry.hidden=true;unsupported.hidden=false;}
 const interaction=createInteraction(surface,mode=>{
-  if(surface.dataset.phaseState)return;
-  searchHint.textContent=mode==='touch'?'画面をスワイプして探してね':'その場で、スマートフォンを左右に向けてね';
+  searchHint.textContent=mode==='touch'?'そのままカメラを向けてみて（スワイプでも見渡せます）':'そのままカメラを向けてみて';
 });
 let layer, stream, generation=0, starting=false;
-function stop(message='カメラを許可して、白うさぎを見つけよう。') {
+function stop(message='カメラを許可して、Wonderlandへ。') {
   generation++;starting=false;interaction.stop();
   if(stream)stream.getTracks().forEach(track=>track.stop());
   stream=null;video.pause();video.srcObject=null;layer?.stop();
-  delete surface.dataset.phaseState;delete surface.dataset.portalMode;
+  delete surface.dataset.phaseState;
   document.body.classList.remove('active');entry.hidden=false;hud.hidden=true;
   enter.disabled=false;enter.innerHTML='Enter Wonderland <span aria-hidden="true">↗</span>';status.textContent=message;
 }
@@ -29,22 +32,13 @@ function ensureLayer(){
   },interaction,progress=>{
     if(follow.textContent!==progress.message)follow.textContent=progress.message;
     care.hidden=!progress.safety;
-    searchHint.hidden=progress.state==='READY_FOR_DOOR'&&!progress.phaseState || progress.phaseState==='PORTAL_DISCOVERED';
-    if(progress.phaseState){
-      searchHint.textContent='その場で、扉に向けて覗いてみて';
-      surface.dataset.portalMode=progress.portalMode;
-      if(surface.dataset.phaseState!==progress.phaseState){
-        surface.dataset.phaseState=progress.phaseState;
-        surface.dispatchEvent(new CustomEvent('phasestatechange',{detail:{state:progress.phaseState}}));
-      }
-    }
-    if(surface.dataset.rabbitState!==progress.state){
-      surface.dataset.rabbitState=progress.state;
-      surface.dispatchEvent(new CustomEvent('rabbitstatechange',{detail:{state:progress.state,completedChases:progress.count}}));
+    if(surface.dataset.phaseState!==progress.state){
+      surface.dataset.phaseState=progress.state;
+      surface.dispatchEvent(new CustomEvent('phasestatechange',{detail:{state:progress.state}}));
     }
   });
 }
-try{ensureLayer();}catch{status.textContent='ボタンを押して、体験を開始してください。';}
+if(mobileDevice){try{ensureLayer();}catch{status.textContent='ボタンを押して、体験を開始してください。';}}
 enter.addEventListener('click',async()=>{
   if(starting)return;
   if(!window.isSecureContext){status.textContent='カメラを使うにはHTTPSのURLで開いてください。';return;}
