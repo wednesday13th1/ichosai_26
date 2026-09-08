@@ -26,7 +26,7 @@ export function createInteraction(surface, onModeChange = () => {}) {
     lastSensorAt = performance.now();
     if (!baseline) { baseline = sample; offsetYaw = yaw; offsetPitch = pitch; }
     yaw = offsetYaw + wrapAngle(sample.yaw-baseline.yaw);
-    pitch = THREE.MathUtils.clamp(offsetPitch+sample.pitch-baseline.pitch,-.65,.65);
+    pitch = THREE.MathUtils.clamp(offsetPitch+sample.pitch-baseline.pitch,rad(-75),rad(80));
     setMode('sensor');
   }
   function rebase() { baseline = null; offsetYaw = yaw; offsetPitch = pitch; }
@@ -37,7 +37,7 @@ export function createInteraction(surface, onModeChange = () => {}) {
   function move(event) {
     if (!pointer || pointer.id !== event.pointerId) return;
     yaw += (event.clientX-pointer.x)/Math.max(surface.clientWidth,1)*1.4;
-    pitch = THREE.MathUtils.clamp(pitch+(event.clientY-pointer.y)/Math.max(surface.clientHeight,1),-.65,.65);
+    pitch = THREE.MathUtils.clamp(pitch+(event.clientY-pointer.y)/Math.max(surface.clientHeight,1)*2,rad(-75),rad(80));
     pointer.x=event.clientX;pointer.y=event.clientY;baseline=null;
   }
   function up() { pointer=null; }

@@ -1,3 +1,2 @@
 export const SceneType=Object.freeze({CLOCK:'clock',CARDS:'cards',CHESS:'chess',TEA_PARTY:'tea-party'});
-const valid=new Set(Object.values(SceneType));
-export function createSceneManager(initial=SceneType.CLOCK){let scene=valid.has(initial)?initial:SceneType.CLOCK;return{setScene(next){if(!valid.has(next))throw new Error(`Unknown scene: ${next}`);scene=next;return scene;},getScene(){return scene;},reset(){scene=SceneType.CLOCK;return scene;}};}
+export function createSceneManager({clock,cards,chess,teaParty}){let active=null;const scenes={clock,cards,chess,'tea-party':teaParty};function setScene(type){Object.values(scenes).forEach(scene=>{scene.root.visible=false;});const next=scenes[type];if(!next)return;active?.reset?.();active=next;active.root.visible=true;active.reset?.();}function update(time,delta){active?.update?.(time,delta);}function reset(){active?.reset?.();}return{setScene,update,reset,getActiveScene:()=>active};}
