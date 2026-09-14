@@ -5,8 +5,8 @@ import {WORLD_CONFIGS} from './world-config.js';
 const porcelain=()=>new THREE.MeshStandardMaterial({color:0xf6efe4,roughness:.58});
 function cake(){const g=new THREE.Group(),base=new THREE.Mesh(new THREE.CylinderGeometry(.24,.26,.2,24),new THREE.MeshStandardMaterial({color:0xd8a6ac,roughness:.76})),icing=new THREE.Mesh(new THREE.CylinderGeometry(.245,.245,.035,24),porcelain());icing.position.y=.115;g.add(base,icing);return g;}
 function steamTexture(){return texture(180,360,(x,w,h)=>{x.strokeStyle='rgba(246,239,228,.65)';x.lineWidth=12;x.lineCap='round';x.beginPath();x.moveTo(w*.55,h);x.bezierCurveTo(w*.1,h*.7,w*.9,h*.45,w*.42,0);x.stroke();});}
-export function createTeaPartyScene(){
- const root=new THREE.Group(),animated=[],rose=roseTexture('#c98793'),steam=steamTexture();root.userData.definition=WORLD_CONFIGS['tea-party'];
+export function createWorld04(){
+ const root=new THREE.Group(),animated=[],rose=roseTexture('#c98793'),steam=steamTexture();root.userData.definition=WORLD_CONFIGS.world04;
  const table=new THREE.Mesh(new THREE.BoxGeometry(4.8,.14,1.2),new THREE.MeshStandardMaterial({color:0xf6efe4,roughness:.82,transparent:true,opacity:.88}));table.position.set(0,-1.52,-2.8);root.add(table);
  [[-1.7,1.45,-4.5,.72],[1.7,1.55,-4.8,.64],[-1.82,.55,-2.6,1.0],[1.82,.4,-3.1,.92]].forEach(([x,y,z,s],i)=>animated.push(addObject(root,plane(rose,s,s,{opacity:z<-4?.58:.87,mode:BILLBOARD.Y_AXIS,depth:z<-4?'far':'mid'}),{x,y,z,rotation:i%2?6:-7,phase:i,duration:15+i,drift:.07})));
  const cup=createTeaCup();cup.scale.setScalar(1.55);animated.push(addObject(root,cup,{x:1.55,y:-.58,z:-2.1,rotation:5,phase:5,duration:14,drift:.09}));

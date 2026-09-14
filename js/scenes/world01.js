@@ -5,8 +5,8 @@ import {WORLD_CONFIGS} from './world-config.js';
 
 function checkerTexture(){return texture(512,512,(x,w)=>{const s=w/8;for(let r=0;r<8;r++)for(let c=0;c<8;c++){x.fillStyle=(r+c)%2?'#1e1c1a':'#f2ebdd';x.fillRect(c*s,r*s,s,s);}});}
 function frameTexture(){return texture(320,420,(x,w,h)=>{x.strokeStyle='#9b948a';x.lineWidth=24;x.strokeRect(18,18,w-36,h-36);x.strokeStyle='rgba(242,235,221,.65)';x.lineWidth=3;x.strokeRect(38,38,w-76,h-76);});}
-export function createClockScene(){
-  const root=new THREE.Group(),animated=[];root.userData.definition=WORLD_CONFIGS.clock;
+export function createWorld01(){
+  const root=new THREE.Group(),animated=[];root.userData.definition=WORLD_CONFIGS.world01;
   const floor=new THREE.Mesh(new THREE.PlaneGeometry(6.4,5.2),new THREE.MeshBasicMaterial({map:checkerTexture(),transparent:true,opacity:.52,side:THREE.DoubleSide,depthWrite:false}));floor.rotation.x=-Math.PI/2;floor.position.set(0,-1.65,-3.9);root.add(floor);
   const pageMap=paperTexture('page'),cardMap=paperTexture('card'),frameMap=frameTexture();
   [[-1.72,1.45,-4.8,.42,.58,-8],[1.55,1.62,-5.1,.38,.55,7]].forEach(([x,y,z,w,o,r],i)=>animated.push(addObject(root,plane(pageMap,w,w*1.35,{opacity:o,depth:'far'}),{x,y,z,rotation:r,phase:i,duration:16+i*2,drift:.07,priority:3})));

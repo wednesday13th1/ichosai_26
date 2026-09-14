@@ -4,8 +4,8 @@ import {addObject,animateObjects,applyResponsivePriority,BILLBOARD,disposeRoot,p
 import {WORLD_CONFIGS} from './world-config.js';
 
 function numeralTexture(value){return texture(256,160,(x,w,h)=>{x.fillStyle='#f1e7d2';x.textAlign='center';x.textBaseline='middle';x.font='italic 92px Georgia';x.fillText(value,w/2,h/2);});}
-export function createChessScene(){
-  const root=new THREE.Group(),animated=[],clocks=[];root.userData.definition=WORLD_CONFIGS.chess;
+export function createWorld03(){
+  const root=new THREE.Group(),animated=[],clocks=[];root.userData.definition=WORLD_CONFIGS.world03;
   const specs=[[-1.72,.62,-3.4,2.15,1,1],[1.7,1.18,-4.8,.82,-1,.25],[1.68,-.65,-2.35,1.42,4,2],[-1.5,-.8,-1.35,.68,.035,3]];
   specs.forEach(([x,y,z,scale,speed,phase],i)=>{const clock=createPocketClock(2+i*2,11+i*7);clock.scale.setScalar(scale);clock.userData.speed=speed;clock.userData.phase=phase;clock.userData.mode=BILLBOARD.Y_AXIS;clock.userData.depth=z<-4?'far':z<-2?'mid':'near';clock.traverse(o=>{if(o.material){o.material.transparent=true;o.material.opacity=z<-4?.58:z<-2?.86:.97;}});addObject(root,clock,{x,y,z,rotation:i%2?6:-8,phase,duration:14+i*2,drift:.055+i*.012,priority:i===0?1:2});animated.push(clock);clocks.push(clock);});
   ['III','VII','IX','XI'].forEach((value,i)=>{const side=i%2?-1:1;animated.push(addObject(root,plane(numeralTexture(value),.78,.48,{opacity:.2,depth:'far'}),{x:side*(1.15+(i%2)*.38),y:1.45-i*.77,z:-5.3,rotation:(i-2)*5,phase:i+5,duration:20+i,drift:.04,priority:3}));});

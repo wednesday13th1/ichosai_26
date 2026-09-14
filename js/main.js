@@ -4,10 +4,10 @@ import {createInteraction} from './interaction.js';
 const $=s=>document.querySelector(s);
 const video=$('#camera'),landing=$('#landing'),permission=$('#permission'),hud=$('#hud'),status=$('#status'),surface=$('#experience'),guide=$('#look-guide'),preview=$('#photo-preview'),photo=$('#captured-photo'),flash=$('#flash'),heading=$('.world-heading'),thumbnail=$('#thumbnail');
 const worlds=[
-  {type:'clock',number:'01',title:'DOWN<br>THE HOLE',subtitle:'Curiouser and curiouser'},
-  {type:'cards',number:'02',title:"QUEEN’S<br>COURT",subtitle:'Paint the roses red'},
-  {type:'chess',number:'03',title:'LOST<br>IN TIME',subtitle:'We are all late here'},
-  {type:'tea-party',number:'04',title:'MAD TEA<br>PARTY',subtitle:'Take another cup of tea'}
+  {type:'world01',number:'01',title:'DOWN<br>THE HOLE',subtitle:'Curiouser and curiouser'},
+  {type:'world02',number:'02',title:"QUEEN’S<br>COURT",subtitle:'Paint the roses red'},
+  {type:'world03',number:'03',title:'LOST<br>IN TIME',subtitle:'We are all late here'},
+  {type:'world04',number:'04',title:'MAD TEA<br>PARTY',subtitle:'Take another cup of tea'}
 ];
 let layer,stream,generation=0,latestBlob,latestUrl,facing='environment',worldIndex=0,captureTimer=0,touchStart=null;
 const interaction=createInteraction(surface);
