@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 const WHITE=0xe8e0d2,BLACK=0x171416,GOLD=0xb99754;
 const materials=new Map();
-function material(color){if(!materials.has(color))materials.set(color,new THREE.MeshStandardMaterial({color,roughness:color===BLACK?.22:.28,metalness:color===BLACK?.08:.05}));return materials.get(color);}
+function material(color){if(!materials.has(color))materials.set(color,new THREE.MeshStandardMaterial({color,roughness:color===BLACK?.72:.64,metalness:color===GOLD?.42:.02}));return materials.get(color);}
 function lathe(points,mat,segments=36){return new THREE.Mesh(new THREE.LatheGeometry(points.map(([x,y])=>new THREE.Vector2(x,y)),segments),mat);}
 function baseProfile(){return[[0,0],[.19,0],[.215,.025],[.21,.065],[.18,.09],[.16,.112],[.145,.14],[.108,.17],[.09,.27],[.105,.3],[.085,.325]];}
 function crown(root,type,mat){
