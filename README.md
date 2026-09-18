@@ -1,6 +1,6 @@
 # A NEW PERSPECTIVE — Wonderland WebAR
 
-文化祭向けのモバイルファーストWebARフォト体験です。ライブカメラ映像の上にThree.jsで構成した4つのWonderlandを重ね、DeviceOrientationによる奥行き別パララックスと静かなアニメーションを加えます。
+文化祭向けのモバイルファースト空間WebAR体験です。対応するAndroid ChromeではWebXR `immersive-ar` / `hit-test`で床を検出し、4つのWonderlandを同じworld anchorへ固定します。WebXR非対応環境でも、ライブカメラとDeviceOrientation / DeviceMotionを使い、同じThree.js実3Dシーンを表示します。
 
 現実を約55〜65%、ARを約35〜45%残し、中央の人物撮影領域を空けたエディトリアルな構図を基本としています。床検出、マーカー、空間アンカーを使用しているように見せるUIはありません。
 
@@ -17,11 +17,11 @@ pnpm build
 
 ## 体験の流れ
 
-1. ウェルカム画面から開始
-2. カメラ利用目的を確認して権限を許可
-3. 約3秒の「LOOK AROUND」コーチング
+1. `ENTER WONDERLAND`からカメラ・モーションを許可
+2. WebXR対応端末では床をスキャンし、検出位置へWonderlandを配置
+3. 非対応端末では背面カメラ上の空間ビューへ配置
 4. World 01からAR撮影を開始
-5. 画面下の番号または横スワイプでWorldを切り替え
+5. Camera内の`NEXT WORLD`で、Sessionを維持したままWorldを切り替え
 6. シャッターでカメラ映像とWebGLを合成
 7. 撮り直し、保存、対応端末では共有
 
@@ -42,10 +42,10 @@ DeviceOrientationが利用できない、または許可されない場合も、
 
 | パス | 責務 |
 | --- | --- |
-| `index.html` | カメラ映像、オンボーディング、最小限の固定カメラUI |
-| `css/style.css` | デザイントークン、safe area、レスポンシブ配置 |
-| `js/main.js` | カメラ権限、World選択、スワイプ、撮影、保存、カメラ反転 |
-| `js/ar.js` | Three.js renderer、カメラ、照明、World接続 |
+| `index.html` | 1アクション起動、配置ガイド、最小限のAR Camera UI |
+| `css/style.css` | 写真映えするエディトリアルUI、safe area、レスポンシブ配置 |
+| `js/main.js` | 起動、fallback camera、World切替、撮影、保存、カメラ反転 |
+| `js/ar.js` | WebXR Session、hit-test、world anchor、renderer、照明、World接続 |
 | `js/scene-manager.js` | Worldライフサイクルとエディトリアル遷移 |
 | `js/interaction.js` | DeviceOrientationとタッチフォールバック |
 | `js/scenes/world-config.js` | 4 Worldのパレット、密度、正規化オブジェクト定義 |
@@ -69,4 +69,4 @@ DeviceOrientationが利用できない、または許可されない場合も、
 
 ## 技術的制限
 
-これは端末の向きによる疑似ARです。平面検出、位置追跡、空間アンカー、人物セグメンテーション、録画は行いません。そのためARオブジェクトを人物の背後へ正確に遮蔽することはできません。本番前にiPhone SafariとAndroid Chromeの実機で、権限、safe area、カメラ反転、長時間のフレームレートを確認してください。
+WebXR対応環境では6DoF位置追跡、hit-test、world anchorを使用します。iOS SafariなどWebXR非対応環境では、カメラ + 端末センサーによる3D fallbackになります。人物セグメンテーション・depth occlusion・録画は未対応です。またWebXRのpassthrough映像はブラウザの保護領域にあるため、WebXR中の標準Canvas撮影では背景カメラを直接取得できない場合があります。本番前に対象端末で権限、配置、撮影、safe area、長時間フレームレートを確認してください。

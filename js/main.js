@@ -1,46 +1,24 @@
 import {createARLayer,cameraErrorMessage} from './ar.js';
 import {createInteraction} from './interaction.js';
-
-const $=s=>document.querySelector(s);
-const video=$('#camera'),landing=$('#landing'),permission=$('#permission'),hud=$('#hud'),status=$('#status'),surface=$('#experience'),guide=$('#look-guide'),preview=$('#photo-preview'),photo=$('#captured-photo'),flash=$('#flash'),heading=$('.world-heading'),thumbnail=$('#thumbnail');
+const $=selector=>document.querySelector(selector);
+const surface=$('#experience'),video=$('#camera'),startup=$('#startup'),hud=$('#hud'),status=$('#status'),guide=$('#placement-guide'),placeButton=$('#place-world'),guideTitle=$('#guide-title'),guideText=$('#guide-text'),preview=$('#photo-preview'),photo=$('#captured-photo'),flash=$('#flash'),thumbnail=$('#thumbnail');
 const worlds=[
-  {type:'world01',number:'01',title:'DOWN<br>THE HOLE',subtitle:'Curiouser and curiouser'},
-  {type:'world02',number:'02',title:"QUEEN’S<br>COURT",subtitle:'Paint the roses red'},
-  {type:'world03',number:'03',title:'LOST<br>IN TIME',subtitle:'We are all late here'},
-  {type:'world04',number:'04',title:'MAD TEA<br>PARTY',subtitle:'Take another cup of tea'}
+  {type:'world01',chapter:'CHAPTER I',title:'THE LIVING CHESSBOARD'},
+  {type:'world02',chapter:'CHAPTER II',title:"THE QUEEN’S COURT"},
+  {type:'world03',chapter:'CHAPTER III',title:'LOST IN TIME'},
+  {type:'world04',chapter:'CHAPTER IV',title:'THE MAD TEA PARTY'}
 ];
-let layer,stream,generation=0,latestBlob,latestUrl,facing='environment',worldIndex=0,captureTimer=0,touchStart=null;
+let layer,stream,generation=0,worldIndex=0,facing='environment',latestBlob,latestUrl,placed=false;
 const interaction=createInteraction(surface);
-
-function ensureLayer(){if(!layer)layer=createARLayer($('#ar-layer'),()=>stop('3D display was interrupted.'),interaction);}
+function trackingChanged(state){if(state.mode==='xr'&&state.surfaceFound&&!state.placed){guideTitle.textContent='SURFACE FOUND';guideText.textContent='円を床に合わせてWonderlandを配置してください';placeButton.hidden=false;}if(state.placed){placed=true;document.body.classList.add('placed');guide.classList.add('done');}}
+function ensureLayer(){if(!layer)layer=createARLayer($('#ar-layer'),()=>stop('3D display was interrupted.'),interaction,trackingChanged);}
 function stopTracks(){stream?.getTracks().forEach(track=>track.stop());stream=null;video.pause();video.srcObject=null;}
-function stop(message=''){generation++;clearTimeout(captureTimer);interaction.stop();stopTracks();layer?.stop();document.body.classList.remove('active');hud.hidden=true;preview.hidden=true;permission.hidden=false;status.textContent=message;}
-async function openCamera(request){stopTracks();const next=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:facing},width:{ideal:1920},height:{ideal:1080}}});if(request!==generation){next.getTracks().forEach(t=>t.stop());return false;}stream=next;video.srcObject=stream;await video.play();video.classList.toggle('mirrored',facing==='user');return true;}
-function showGuide(){guide.classList.remove('out');setTimeout(()=>guide.classList.add('out'),3200);}
-
-function setWorld(index,immediate=false){
-  worldIndex=(index+worlds.length)%worlds.length;const world=worlds[worldIndex];
-  if(!immediate)heading.classList.add('switching');
-  setTimeout(()=>{$('#world-number').textContent=world.number;$('#world-title').innerHTML=world.title;$('#world-subtitle').textContent=world.subtitle;document.querySelectorAll('#world-selector button').forEach((b,i)=>{b.classList.toggle('active',i===worldIndex);b.setAttribute('aria-current',i===worldIndex?'true':'false');});layer?.setScene(world.type);heading.classList.remove('switching');},immediate?0:320);
-}
-
-$('#enter').addEventListener('click',()=>{landing.hidden=true;permission.hidden=false;});
-$('#allow-camera').addEventListener('click',async()=>{
-  if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia){status.textContent='Open this page over HTTPS in Safari or Chrome.';return;}
-  status.textContent='Opening camera…';const request=++generation;
-  try{ensureLayer();await interaction.requestPermission();if(!await openCamera(request))return;permission.hidden=true;setWorld(0,true);interaction.start();layer.start();hud.hidden=false;document.body.classList.add('active');status.textContent='';showGuide();}
-  catch(error){status.textContent=cameraErrorMessage(error);}
-});
-document.querySelectorAll('#world-selector button').forEach((button,index)=>button.addEventListener('click',()=>setWorld(index)));
-
-surface.addEventListener('touchstart',event=>{if(hud.hidden||event.target.closest('button'))return;const touch=event.changedTouches[0];touchStart={x:touch.clientX,y:touch.clientY};},{passive:true});
-surface.addEventListener('touchend',event=>{if(!touchStart)return;const touch=event.changedTouches[0],dx=touch.clientX-touchStart.x,dy=touch.clientY-touchStart.y;touchStart=null;if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.35)setWorld(worldIndex+(dx<0?1:-1));},{passive:true});
-
+async function openCamera(request){stopTracks();const next=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:facing},width:{ideal:1920},height:{ideal:1080}}});if(request!==generation){next.getTracks().forEach(track=>track.stop());return false;}stream=next;video.srcObject=stream;await video.play();video.classList.toggle('mirrored',facing==='user');return true;}
+function setWorld(index){worldIndex=(index+worlds.length)%worlds.length;const world=worlds[worldIndex];$('#world-kicker').textContent=world.chapter;$('#world-title').textContent=world.title;layer?.setScene(world.type);}
+function placeWorld(){if(!layer?.place())return;placed=true;document.body.classList.add('placed');}
+async function start(){if(!window.isSecureContext){status.textContent='HTTPSで開いてください。';return;}const button=$('#start-ar');button.disabled=true;status.textContent='Opening the looking glass…';const request=++generation;try{ensureLayer();await interaction.requestPermission();interaction.start();const usingXR=await layer.start();if(!usingXR){if(!navigator.mediaDevices?.getUserMedia)throw new Error('Camera API unavailable');if(!await openCamera(request))return;guideTitle.textContent='PLACE WONDERLAND';guideText.textContent='端末を動かすと、3D空間の見え方が変化します';placeButton.hidden=false;}startup.hidden=true;hud.hidden=false;document.body.classList.add('active');setWorld(0);}catch(error){interaction.stop();layer?.stop();status.textContent=cameraErrorMessage(error);button.disabled=false;}}
+function stop(message=''){generation++;interaction.stop();stopTracks();layer?.stop();placed=false;document.body.classList.remove('active','placed','xr-presenting');hud.hidden=true;preview.hidden=true;startup.hidden=false;guide.classList.remove('done');placeButton.hidden=true;$('#start-ar').disabled=false;status.textContent=message||'Rear camera and motion access are used only during this experience.';}
 function drawCover(ctx,source,sw,sh,w,h,mirror=false){const scale=Math.max(w/sw,h/sh),dw=sw*scale,dh=sh*scale;ctx.save();if(mirror){ctx.translate(w,0);ctx.scale(-1,1);}ctx.drawImage(source,(w-dw)/2,(h-dh)/2,dw,dh);ctx.restore();}
-function captureFrame(){if(!stream||!video.videoWidth)return;const rect=surface.getBoundingClientRect(),ratio=Math.min(2,1600/Math.max(rect.width,rect.height)),canvas=document.createElement('canvas');canvas.width=Math.round(rect.width*ratio);canvas.height=Math.round(rect.height*ratio);const ctx=canvas.getContext('2d');drawCover(ctx,video,video.videoWidth,video.videoHeight,canvas.width,canvas.height,facing==='user');ctx.drawImage(layer.canvas,0,0,canvas.width,canvas.height);canvas.toBlob(blob=>{if(!blob)return;latestBlob=blob;if(latestUrl)URL.revokeObjectURL(latestUrl);latestUrl=URL.createObjectURL(blob);photo.src=latestUrl;thumbnail.style.backgroundImage=`url(${latestUrl})`;thumbnail.querySelector('span').hidden=true;hud.hidden=true;preview.hidden=false;layer.resume();},'image/png');}
-function capture(){if(!stream||!video.videoWidth)return;layer.pause();flash.classList.remove('fire');void flash.offsetWidth;captureTimer=setTimeout(()=>flash.classList.add('fire'),80);setTimeout(captureFrame,160);setTimeout(()=>layer.resume(),300);}
-async function save(){if(!latestBlob)return;const file=new File([latestBlob],`wonderland-${Date.now()}.png`,{type:'image/png'});try{if(navigator.share&&navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:'Wonderland'});return;}}catch(error){if(error.name==='AbortError')return;}const a=document.createElement('a');a.href=latestUrl;a.download=file.name;a.click();}
-
-$('#shutter').addEventListener('click',capture);thumbnail.addEventListener('click',()=>{if(latestUrl){hud.hidden=true;preview.hidden=false;}});$('#retake').addEventListener('click',()=>{preview.hidden=true;hud.hidden=false;layer.resume();});$('#save-photo').addEventListener('click',save);$('#exit').addEventListener('click',()=>stop());
-$('#flip-camera').addEventListener('click',async()=>{facing=facing==='environment'?'user':'environment';const request=++generation;try{await openCamera(request);}catch(error){status.textContent=cameraErrorMessage(error);}});
-window.addEventListener('pagehide',()=>{stopTracks();if(latestUrl)URL.revokeObjectURL(latestUrl);});
+function capture(){if(!placed)return;layer.pause();flash.classList.remove('fire');void flash.offsetWidth;flash.classList.add('fire');setTimeout(()=>{const rect=surface.getBoundingClientRect(),ratio=Math.min(2,1600/Math.max(rect.width,rect.height)),canvas=document.createElement('canvas');canvas.width=Math.round(rect.width*ratio);canvas.height=Math.round(rect.height*ratio);const ctx=canvas.getContext('2d');if(stream&&video.videoWidth)drawCover(ctx,video,video.videoWidth,video.videoHeight,canvas.width,canvas.height,facing==='user');else{ctx.fillStyle='#15110f';ctx.fillRect(0,0,canvas.width,canvas.height);}ctx.drawImage(layer.canvas,0,0,canvas.width,canvas.height);canvas.toBlob(blob=>{if(!blob)return;latestBlob=blob;if(latestUrl)URL.revokeObjectURL(latestUrl);latestUrl=URL.createObjectURL(blob);photo.src=latestUrl;thumbnail.style.backgroundImage=`url(${latestUrl})`;thumbnail.querySelector('span').hidden=true;hud.hidden=true;preview.hidden=false;layer.resume();},'image/png');},120);}
+async function save(){if(!latestBlob)return;const file=new File([latestBlob],`wonderland-${Date.now()}.png`,{type:'image/png'});try{if(navigator.share&&navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:'Alice in Wonderland AR'});return;}}catch(error){if(error.name==='AbortError')return;}const link=document.createElement('a');link.href=latestUrl;link.download=file.name;link.click();}
+$('#start-ar').addEventListener('click',start);placeButton.addEventListener('click',placeWorld);$('#next-world').addEventListener('click',()=>setWorld(worldIndex+1));$('#shutter').addEventListener('click',capture);$('#exit').addEventListener('click',()=>stop());thumbnail.addEventListener('click',()=>{if(latestUrl){hud.hidden=true;preview.hidden=false;}});$('#retake').addEventListener('click',()=>{preview.hidden=true;hud.hidden=false;layer.resume();});$('#save-photo').addEventListener('click',save);$('#flip-camera').addEventListener('click',async()=>{if(layer?.isXR)return;facing=facing==='environment'?'user':'environment';try{await openCamera(++generation);}catch(error){status.textContent=cameraErrorMessage(error);}});window.addEventListener('pagehide',()=>{stopTracks();if(latestUrl)URL.revokeObjectURL(latestUrl);});
