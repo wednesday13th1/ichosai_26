@@ -27,14 +27,27 @@ pnpm build
 
 DeviceOrientationが利用できない、または許可されない場合も、タッチ操作と自律アニメーションで継続します。
 
+## Time Adaptive Wonderland
+
+現地時刻を連続値として扱い、各区分の終了30分前から次のテーマへpalette、照明、rim light、particle opacity、haze、shadow、animation speedを補間します。UIだけでなく各WorldのPBR material・emissive・particleにも同じtheme stateを渡します。
+
+| 時間 | Theme | 表現 |
+| --- | --- | --- |
+| 06:00–10:59 | Morning | Victorian ivory、dust blue、低いglow、ゆっくりした浮遊 |
+| 11:00–15:59 | Day | 高いcontrast、subtle rim light、標準速度 |
+| 16:00–18:29 | Golden | amber light、burgundy、暖色highlight |
+| 18:30–05:59 | After Dark | moon ivory、midnight blue、強めのrim light、深いhaze |
+
+開発時は `?time=08`、`?time=13`、`?time=17:15`、`?time=20` で時刻を固定できます。`&preview=1&world=3` を追加すると、カメラ権限なしで指定Worldをvisual QAできます。queryがない本番では実時間を使用し、1分ごとに更新します。
+
 ## 4 Worlds
 
 | ID | World | AR構成 |
 | --- | --- | --- |
-| 01 | DOWN THE HOLE | 浮遊カード、ページ、額縁、アンティーク時計、透けたチェッカーボード |
-| 02 | QUEEN'S COURT | ハートカード、ベルベット、バラ、王冠の気配、赤い粒子 |
+| 01 | DOWN THE HOLE | 浮遊カード、建築断片、浮遊チェス駒、分割チェス盤 |
+| 02 | QUEEN'S COURT | ハートカード、バラ、空中で崩れたチェス盤と駒、赤い粒子 |
 | 03 | LOST IN TIME | サイズと速度の異なる時計、時計針、ローマ数字、チェーン |
-| 04 | MAD TEA PARTY | ティーカップ、ティーポット、花、ケーキ、テーブル、蒸気 |
+| 04 | MAD TEA PARTY | 一体構図の浮遊カップ、ティーポット、花、ケーキ、テーブル断片、蒸気 |
 
 各WorldはFAR・MID・NEARの深度、FULL・Y-axis・FIXEDのビルボード方式、優先度別レスポンシブ削減を持ちます。切り替えは750msのフェードと約3vwの水平ドリフトです。
 

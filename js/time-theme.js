@@ -1,28 +1,25 @@
-const THEMES=Object.freeze({
- morning:{name:'morning',label:'GOOD MORNING, ALICE',subtext:'THE STORY IS JUST BEGINNING',sky:0xf6e4c6,ground:0x57504a,key:0xfff0cf,keyIntensity:1.1,particle:0xc9ae74},
- afternoon:{name:'afternoon',label:'A VERY CURIOUS AFTERNOON',subtext:'',sky:0xefe4ce,ground:0x29231f,key:0xffefd3,keyIntensity:1.25,particle:0xb79a61},
- golden:{name:'golden',label:'THE QUEEN IS WAITING',subtext:'',sky:0xe8d6b4,ground:0x4e1820,key:0xffc979,keyIntensity:1.4,particle:0xc49a55},
- night:{name:'night',label:'CURIOUSER AFTER DARK',subtext:"DON'T BE LATE.",sky:0x151c29,ground:0x080a0f,key:0xbfcbea,keyIntensity:.78,particle:0xbbc2c9}
+const hex=value=>Number.parseInt(value.replace('#',''),16);
+const mixNumber=(a,b,t)=>a+(b-a)*t;
+const mixColor=(a,b,t)=>{const ar=(a>>16)&255,ag=(a>>8)&255,ab=a&255,br=(b>>16)&255,bg=(b>>8)&255,bb=b&255;return(Math.round(mixNumber(ar,br,t))<<16)|(Math.round(mixNumber(ag,bg,t))<<8)|Math.round(mixNumber(ab,bb,t));};
+const cssHex=value=>`#${value.toString(16).padStart(6,'0')}`;
+const PRESETS=Object.freeze({
+ morning:{name:'morning',label:'MORNING WONDERLAND',ui:'#f4efe4',accent:'#b99a62',material:'rgba(245,240,230,.12)',border:'rgba(255,255,255,.28)',blur:12,sky:hex('#f4efe4'),ground:hex('#55564f'),key:hex('#fff0d5'),keyIntensity:1.02,rimIntensity:.22,particleOpacity:.34,hazeOpacity:.055,animationSpeed:.8,shadowOpacity:.13,worlds:{world01:'#aab9c4',world02:'#d8b7b2',world03:'#d6d2c8',world04:'#aab9c4'}},
+ day:{name:'day',label:'DAY WONDERLAND',ui:'#f5f1e8',accent:'#b49152',material:'rgba(245,241,232,.09)',border:'rgba(255,255,255,.32)',blur:10,sky:hex('#f5f1e8'),ground:hex('#313234'),key:hex('#ffffff'),keyIntensity:1.28,rimIntensity:.36,particleOpacity:.44,hazeOpacity:.025,animationSpeed:1,shadowOpacity:.2,worlds:{world01:'#596c80',world02:'#9f1d2d',world03:'#9a7448',world04:'#d8a6ac'}},
+ golden:{name:'golden',label:'GOLDEN WONDERLAND',ui:'#efe1cc',accent:'#d49a58',material:'rgba(112,45,60,.13)',border:'rgba(239,193,126,.4)',blur:12,sky:hex('#ead0a9'),ground:hex('#5b2930'),key:hex('#ffc477'),keyIntensity:1.42,rimIntensity:.55,particleOpacity:.54,hazeOpacity:.075,animationSpeed:.9,shadowOpacity:.2,worlds:{world01:'#d49a58',world02:'#702d3c',world03:'#c49a54',world04:'#b76e79'}},
+ night:{name:'night',label:'AFTER DARK',ui:'#e8e2d7',accent:'#b79458',material:'rgba(10,12,18,.22)',border:'rgba(255,255,255,.18)',blur:14,sky:hex('#111827'),ground:hex('#140d18'),key:hex('#c8d5f0'),keyIntensity:.72,rimIntensity:.78,particleOpacity:.6,hazeOpacity:.1,animationSpeed:.8,shadowOpacity:.24,worlds:{world01:'#9eabc3',world02:'#6d1f34',world03:'#c3cad6',world04:'#756986'}}
 });
-
+const STOPS=[{minute:360,key:'morning'},{minute:660,key:'day'},{minute:960,key:'golden'},{minute:1110,key:'night'},{minute:1800,key:'morning'}];
+function minutes(date){return date.getHours()*60+date.getMinutes()+date.getSeconds()/60;}
+function parseMock(value){if(!value)return null;const match=/^(\d{1,2})(?::(\d{1,2}))?$/.exec(value);if(!match)return null;const hour=Number(match[1]),minute=Number(match[2]||0);if(hour>23||minute>59)return null;const date=new Date();date.setHours(hour,minute,0,0);return date;}
+function interpolate(a,b,t){const eased=t*t*(3-2*t),theme={};for(const key of ['sky','ground','key'])theme[key]=mixColor(a[key],b[key],eased);for(const key of ['keyIntensity','rimIntensity','particleOpacity','hazeOpacity','animationSpeed','shadowOpacity','blur'])theme[key]=mixNumber(a[key],b[key],eased);theme.ui=cssHex(mixColor(hex(a.ui),hex(b.ui),eased));theme.accent=cssHex(mixColor(hex(a.accent),hex(b.accent),eased));theme.material=t<.5?a.material:b.material;theme.border=t<.5?a.border:b.border;theme.worlds={};for(const key of Object.keys(a.worlds))theme.worlds[key]=cssHex(mixColor(hex(a.worlds[key]),hex(b.worlds[key]),eased));return theme;}
 export function getTimeTheme(date=new Date()){
- const hour=date.getHours();
- if(hour>=5&&hour<11)return THEMES.morning;
- if(hour>=11&&hour<16)return THEMES.afternoon;
- if(hour>=16&&hour<19)return THEMES.golden;
- return THEMES.night;
+ let value=minutes(date);if(value<360)value+=1440;let current=STOPS[0],next=STOPS[1];for(let i=0;i<STOPS.length-1;i++)if(value>=STOPS[i].minute&&value<STOPS[i+1].minute){current=STOPS[i];next=STOPS[i+1];break;}
+ const transitionMinutes=30,start=next.minute-transitionMinutes,t=value>start?(value-start)/transitionMinutes:0,a=PRESETS[current.key],b=PRESETS[next.key],mixed=interpolate(a,b,Math.max(0,Math.min(1,t)));return{...a,...mixed,name:a.name,label:a.label,from:a.name,to:b.name,blend:Math.max(0,Math.min(1,t))};
 }
-
-export function applyTimeTheme(date=new Date()){
- const theme=getTimeTheme(date),root=document.documentElement;
- root.dataset.timeTheme=theme.name;
- const title=document.querySelector('#time-theme-label'),subtitle=document.querySelector('#time-theme-subtext');
- if(title)title.textContent=theme.label;
- if(subtitle){subtitle.textContent=theme.subtext;subtitle.hidden=!theme.subtext;}
- root.dispatchEvent(new CustomEvent('wonderlandthemechange',{detail:theme}));
- return theme;
+export function resolveThemeDate(search=globalThis.location?.search||'',now=new Date()){const value=new URLSearchParams(search).get('time');return parseMock(value)||now;}
+export function applyTimeTheme(date=resolveThemeDate()){
+ const theme=getTimeTheme(date),root=document.documentElement;root.dataset.timeTheme=theme.name;root.style.setProperty('--theme-ivory',theme.ui);root.style.setProperty('--theme-accent',theme.accent);root.style.setProperty('--theme-material',theme.material);root.style.setProperty('--theme-border',theme.border);root.style.setProperty('--theme-blur',`${theme.blur}px`);root.style.setProperty('--theme-glow',`${theme.rimIntensity*.7}rem`);document.querySelector('#time-theme-label')?.replaceChildren(theme.label);root.dispatchEvent(new CustomEvent('wonderlandthemechange',{detail:theme}));return theme;
 }
-
-export function formatLocalTime(date=new Date()){
- return new Intl.DateTimeFormat(undefined,{hour:'2-digit',minute:'2-digit',hour12:false}).format(date);
-}
+export function createTimeThemeController({search=globalThis.location?.search||'',interval=60000}={}){let timer=null,current=null;const update=()=>{current=applyTimeTheme(resolveThemeDate(search));return current;};return{start(){update();if(!new URLSearchParams(search).has('time'))timer=setInterval(update,interval);return current;},stop(){clearInterval(timer);timer=null;},update,get current(){return current;}};}
+export function formatLocalTime(date=new Date()){return new Intl.DateTimeFormat(undefined,{hour:'2-digit',minute:'2-digit',hour12:false}).format(date);}
+export{PRESETS as TIME_THEME_PRESETS};

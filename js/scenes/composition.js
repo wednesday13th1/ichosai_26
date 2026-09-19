@@ -22,16 +22,21 @@ export function addConfiguredObject(root,object,config){
   object.userData.depth=config.depth;object.userData.mode=config.billboardMode;object.name=config.id;
   return addObject(root,object,{...position,rotation:config.rotation,phase:animation.phase||0,duration:animation.duration||14,drift:maxPx/150,priority:config.priority,parallax:DEPTH[config.depth].parallax,asset:config.asset,size:config.size.preferred,animation:animation.type});
 }
-export function animateObjects(objects,time,view={yaw:0,pitch:0},camera){
+export function animateObjects(objects,time,view={yaw:0,pitch:0},camera,theme={animationSpeed:1}){
+  const reduced=globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches??false,motionScale=reduced?.4:1,animationSpeed=theme.animationSpeed??1;
   for(const object of objects){
-    const u=object.userData,omega=Math.PI*2/(u.duration||14),wave=Math.sin(time*omega+(u.phase||0));
+    const u=object.userData,omega=Math.PI*2/(u.duration||14)*animationSpeed,wave=Math.sin(time*omega+(u.phase||0));
     const yaw=THREE.MathUtils.clamp(view.yaw||0,-.42,.42),pitch=THREE.MathUtils.clamp(view.pitch||0,-.32,.32),strength=(u.parallax||.065)*1.9;
-    object.position.y=u.base.y+wave*(u.drift||.08)-pitch*strength;
-    object.position.x=u.base.x+Math.cos(time*omega*.72+(u.phase||0))*(u.drift||.08)*.55-yaw*strength;
-    object.rotation.z=u.baseRotation.z+wave*THREE.MathUtils.degToRad(2.4);
+    object.position.y=u.base.y+wave*(u.drift||.08)*motionScale-pitch*strength;
+    object.position.x=u.base.x+Math.cos(time*omega*.72+(u.phase||0))*(u.drift||.08)*.55*motionScale-yaw*strength;
+    object.rotation.z=u.baseRotation.z+wave*THREE.MathUtils.degToRad(2.4)*motionScale;
     if(camera&&u.mode===BILLBOARD.FULL)object.quaternion.copy(camera.quaternion);
     else if(camera&&u.mode===BILLBOARD.Y_AXIS)object.rotation.y=camera.rotation.y;
   }
+}
+export function applyThemeToRoot(root,theme,worldKey,{tint=.22}={}){
+  if(!theme)return;const accent=new THREE.Color(theme.worlds?.[worldKey]||theme.accent),moon=new THREE.Color(theme.ui);
+  root.traverse(object=>{const materials=object.material?(Array.isArray(object.material)?object.material:[object.material]):[];materials.forEach(material=>{if(!material.userData.themeBase){material.userData.themeBase={color:material.color?.clone(),emissive:material.emissive?.clone(),emissiveIntensity:material.emissiveIntensity??0,opacity:material.opacity??1};}const base=material.userData.themeBase;if(material.color&&base.color){material.color.copy(base.color).lerp(accent,tint*(object.userData.depth==='far'?.55:1));if(theme.name==='night')material.color.lerp(moon,.08);}if(material.emissive){material.emissive.copy(base.emissive||new THREE.Color()).lerp(accent,.8);material.emissiveIntensity=(base.emissiveIntensity||0)+theme.rimIntensity*(object.userData.depth==='near'?.22:.12);}if(material.isPointsMaterial){material.color.copy(accent);material.opacity=base.opacity*theme.particleOpacity;material.transparent=true;}material.needsUpdate=true;});});
 }
 export function applyResponsivePriority(objects,width=window.innerWidth,height=window.innerHeight){
   const compact=width<390,short=height<620;
