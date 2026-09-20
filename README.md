@@ -55,6 +55,12 @@ DeviceOrientationが利用できない、または許可されない場合も、
 
 `assets/models/` に `pocket-watch.glb`、`playing-card.glb`、`rose.glb`、`gear.glb`、`teapot.glb`、`teacup.glb` を置くと、Viteのビルド時検出を通じて対応する手続き型オブジェクトが読み込み後に置き換わります。追加後はdev serverまたはbuildを再起動してください。ファイルが無い、壊れている、または読み込みがタイムアウトした場合は、通信エラーを体験へ波及させず手続き型Three.js geometryをそのまま使用します。
 
+## Camera color grading
+
+`js/camera-filters.js` が4 Worldのcamera gradeを集中管理します。ライブ映像だけへ軽量なCSS color operationsを適用し、人物safe zoneを守るradial atmosphereをcameraとThree.jsの間に描画します。World切替時は750msで補間され、時間帯に応じて強度・明るさ・暖かさだけを控えめに調整します。撮影時は同じfilter値とgradientをCanvas 2Dへ再描画するため、保存画像にもgradeが残ります。Three.jsとHTML UIはgrade対象外です。
+
+GLBにanimation clipが含まれる場合、`upgradeWithModel()` は`AnimationMixer`を生成します。独自Worldでanimated GLBを使用する場合はrender loopから`updateModelAnimation(holder, delta)`を呼び、dispose時に`disposeModelAnimation(holder)`を使用してください。静的GLBとprocedural fallbackではMixerは生成されません。
+
 ## 現行アーキテクチャ
 
 | パス | 責務 |
