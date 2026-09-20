@@ -33,10 +33,10 @@ DeviceOrientationが利用できない、または許可されない場合も、
 
 | 時間 | Theme | 表現 |
 | --- | --- | --- |
-| 06:00–10:59 | Morning | Victorian ivory、dust blue、低いglow、ゆっくりした浮遊 |
-| 11:00–15:59 | Day | 高いcontrast、subtle rim light、標準速度 |
-| 16:00–18:29 | Golden | amber light、burgundy、暖色highlight |
-| 18:30–05:59 | After Dark | moon ivory、midnight blue、強めのrim light、深いhaze |
+| 06:00–11:59 | Morning | Victorian ivory、dust blue、低いglow、ゆっくりした浮遊 |
+| 12:00–16:59 | Day | 高いcontrast、subtle rim light、標準速度 |
+| 17:00–19:59 | Evening | amber light、burgundy、暖色highlight |
+| 20:00–05:59 | After Dark | moon ivory、midnight blue、強めのrim light、深いhaze |
 
 開発時は `?time=08`、`?time=13`、`?time=17:15`、`?time=20` で時刻を固定できます。`&preview=1&world=3` を追加すると、カメラ権限なしで指定Worldをvisual QAできます。queryがない本番では実時間を使用し、1分ごとに更新します。
 
@@ -44,12 +44,16 @@ DeviceOrientationが利用できない、または許可されない場合も、
 
 | ID | World | AR構成 |
 | --- | --- | --- |
-| 01 | DOWN THE HOLE | 浮遊カード、建築断片、浮遊チェス駒、分割チェス盤 |
-| 02 | QUEEN'S COURT | ハートカード、バラ、空中で崩れたチェス盤と駒、赤い粒子 |
-| 03 | LOST IN TIME | サイズと速度の異なる時計、時計針、ローマ数字、チェーン |
-| 04 | MAD TEA PARTY | 一体構図の浮遊カップ、ティーポット、花、ケーキ、テーブル断片、蒸気 |
+| 01 | DOWN THE HOLE | 2つの懐中時計、カード、ページ、鍵、塵が異なる深度で落下 |
+| 02 | QUEEN'S COURT | 人物の外側を周回するカード、深紅の空気、左右下部のバラ |
+| 03 | LOST IN TIME | 人物を囲う大時計、4つの歯車、漂う数字、低濃度Op Art spiral |
+| 04 | MAD TEA PARTY | 下三分の一のティーセット、浮上・傾き・注ぐ粒・カップ浮上の物語動作 |
 
-各WorldはFAR・MID・NEARの深度、FULL・Y-axis・FIXEDのビルボード方式、優先度別レスポンシブ削減を持ちます。切り替えは750msのフェードと約3vwの水平ドリフトです。
+各WorldはFAR・MID・NEARの深度、中央人物セーフゾーン、優先度別レスポンシブ削減、REST → BUILD → HERO → RECOVERYの8〜14秒サイクルを持ちます。切り替えは750msのフェードと約3vwの水平ドリフトです。
+
+## Optional GLB assets
+
+`assets/models/` に `pocket-watch.glb`、`playing-card.glb`、`rose.glb`、`gear.glb`、`teapot.glb`、`teacup.glb` を置くと、Viteのビルド時検出を通じて対応する手続き型オブジェクトが読み込み後に置き換わります。追加後はdev serverまたはbuildを再起動してください。ファイルが無い、壊れている、または読み込みがタイムアウトした場合は、通信エラーを体験へ波及させず手続き型Three.js geometryをそのまま使用します。
 
 ## 現行アーキテクチャ
 

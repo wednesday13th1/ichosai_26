@@ -4,7 +4,7 @@ import {createTimeThemeController} from './time-theme.js';
 const $=selector=>document.querySelector(selector);
 const surface=$('#experience'),video=$('#camera'),startup=$('#startup'),hud=$('#hud'),status=$('#status'),guide=$('#placement-guide'),placeButton=$('#place-world'),guideTitle=$('#guide-title'),guideText=$('#guide-text'),preview=$('#photo-preview'),photo=$('#captured-photo'),flash=$('#flash'),thumbnail=$('#thumbnail');
 const worlds=[
-  {type:'world01',chapter:'CHAPTER I',title:'THE LIVING CHESSBOARD'},
+  {type:'world01',chapter:'CHAPTER I',title:'DOWN THE HOLE'},
   {type:'world02',chapter:'CHAPTER II',title:"THE QUEEN’S COURT"},
   {type:'world03',chapter:'CHAPTER III',title:'LOST IN TIME'},
   {type:'world04',chapter:'CHAPTER IV',title:'THE MAD TEA PARTY'}

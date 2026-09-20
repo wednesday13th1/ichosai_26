@@ -7,6 +7,15 @@ export const DEPTH=Object.freeze({
 });
 export const BILLBOARD=Object.freeze({FULL:'full',Y_AXIS:'y-axis',FIXED:'fixed'});
 export const SIZES=Object.freeze({small:.34,medium:.62,large:1.05,hero:1.48});
+export const SAFE_ZONE=Object.freeze({left:.28,right:.72,top:.24,bottom:.74});
+export const MOTION_PHASE=Object.freeze({REST:'rest',BUILD:'build',HERO:'hero',RECOVERY:'recovery'});
+
+export function createDepthLayers(root){const background=new THREE.Group(),midground=new THREE.Group(),foreground=new THREE.Group();background.name='background-depth';midground.name='midground-depth';foreground.name='foreground-depth';root.add(background,midground,foreground);return{background,midground,foreground};}
+export function cycleState(time,duration=12,heroStart=.55,heroEnd=.76){const progress=((time%duration)+duration)%duration/duration;if(progress<.16)return{phase:MOTION_PHASE.REST,progress,local:progress/.16,hero:0};if(progress<heroStart){const local=(progress-.16)/(heroStart-.16);return{phase:MOTION_PHASE.BUILD,progress,local,hero:0};}if(progress<heroEnd){const local=(progress-heroStart)/(heroEnd-heroStart);return{phase:MOTION_PHASE.HERO,progress,local,hero:Math.sin(local*Math.PI)};}const local=(progress-heroEnd)/(1-heroEnd);return{phase:MOTION_PHASE.RECOVERY,progress,local,hero:0};}
+export function easeInOut(t){const value=THREE.MathUtils.clamp(t,0,1);return value*value*(3-2*value);}
+export function outsideSafeZone(x,y){return x<=SAFE_ZONE.left||x>=SAFE_ZONE.right||y<=SAFE_ZONE.top||y>=SAFE_ZONE.bottom;}
+export function performanceTier({width=globalThis.innerWidth||390,height=globalThis.innerHeight||844,dpr=globalThis.devicePixelRatio||1,cores=globalThis.navigator?.hardwareConcurrency||4}={}){const pixels=width*height*Math.min(dpr,2)**2;if(cores<=4||pixels>3_600_000)return'low';if(cores>=8&&pixels<2_500_000)return'high';return'medium';}
+export const qualitySettings=tier=>tier==='low'?{dpr:1.25,particles:.55,decorations:.68,shadows:false}:tier==='high'?{dpr:2,particles:1,decorations:1,shadows:true}:{dpr:1.65,particles:.78,decorations:.85,shadows:false};
 
 export function texture(width,height,paint){const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d');paint(ctx,width,height);const map=new THREE.CanvasTexture(canvas);map.colorSpace=THREE.SRGBColorSpace;return map;}
 export function plane(map,width,height,{opacity=1,mode=BILLBOARD.FIXED,depth='mid'}={}){const material=new THREE.MeshBasicMaterial({map,transparent:true,opacity,depthWrite:false,side:THREE.DoubleSide});const mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,height),material);mesh.userData={...mesh.userData,depth,mode,base:null,phase:0};return mesh;}
