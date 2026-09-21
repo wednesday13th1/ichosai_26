@@ -92,4 +92,4 @@ GLBにanimation clipが含まれる場合、`upgradeWithModel()` は`AnimationMi
 
 ## 技術的制限
 
-WebXR対応環境では6DoF位置追跡、hit-test、world anchorを使用します。iOS SafariなどWebXR非対応環境では、カメラ + 端末センサーによる3D fallbackになります。人物セグメンテーション・depth occlusion・録画は未対応です。またWebXRのpassthrough映像はブラウザの保護領域にあるため、WebXR中の標準Canvas撮影では背景カメラを直接取得できない場合があります。本番前に対象端末で権限、配置、撮影、safe area、長時間フレームレートを確認してください。
+WebXR対応環境では6DoF位置追跡、hit-test、world anchorを使用します。iOS SafariなどWebXR非対応環境では、カメラ + 端末センサーによる3D fallbackになります。MAD TEA PARTYではMediaPipe Selfie Segmenterを端末内で実行し、人物マスクが利用できる場合だけ遠景ARを人物の後ろへ合成します。モデル読込失敗・未対応環境・低速端末では自動的にsafe-zone構図へ戻ります。WebXRのpassthrough映像はブラウザの保護領域にあるため、WebXR中は人物マスクと標準Canvas撮影の背景カメラ取得が利用できない場合があります。本番前に対象端末で権限、配置、撮影、safe area、長時間フレームレートを確認してください。
