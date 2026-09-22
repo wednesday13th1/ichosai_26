@@ -5,9 +5,9 @@ import {applyCameraGradeOverlay,createCameraFilterController,cssFilter} from './
 const $=selector=>document.querySelector(selector);
 const surface=$('#experience'),video=$('#camera'),startup=$('#startup'),hud=$('#hud'),status=$('#status'),guide=$('#placement-guide'),placeButton=$('#place-world'),guideTitle=$('#guide-title'),guideText=$('#guide-text'),preview=$('#photo-preview'),photo=$('#captured-photo'),flash=$('#flash'),thumbnail=$('#thumbnail');
 const worlds=[
-  {type:'world01',chapter:'CHAPTER I',title:'DOWN THE HOLE'},
+  {type:'world01',chapter:'CHAPTER I',title:'CLOCKWORK DREAM'},
   {type:'world02',chapter:'CHAPTER II',title:"THE QUEEN’S COURT"},
-  {type:'world03',chapter:'CHAPTER III',title:'LOST IN TIME'},
+  {type:'world03',chapter:'CHAPTER III',title:'THROUGH THE CHESSBOARD'},
   {type:'world04',chapter:'CHAPTER IV',title:'THE MAD TEA PARTY'}
 ];
 let layer,stream,generation=0,worldIndex=0,facing='environment',latestBlob,latestUrl,placed=false;

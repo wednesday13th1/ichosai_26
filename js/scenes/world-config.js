@@ -5,7 +5,7 @@ const object=(id,asset,x,y,z,width,rotation,depth,opacity,billboardMode,priority
 });
 
 export const WORLD_CONFIGS=Object.freeze({
-  world01:{id:'01',title:'DOWN THE HOLE',density:.35,palette:{ivory:'#F2EBDD',grey:'#7A746C',ink:'#1E1C1A',blue:'#A6B7C2',silver:'#9B948A'},objects:[
+  world01:{id:'01',title:'CLOCKWORK DREAM',density:.35,palette:{ivory:'#F2EBDD',grey:'#7A746C',ink:'#1E1C1A',blue:'#A6B7C2',silver:'#9B948A'},objects:[
     object('heroClock','procedural:antique-clock',.80,.34,-3.1,.38,-7,'mid',.92,'y-axis',1,motion(14,-3,8,14)),
     object('cardA','procedural:playing-card',.12,.42,-1.6,.14,18,'near',.96,'fixed',2,motion(12,1,16,12,4)),
     object('cardB','procedural:playing-card',.87,.63,-1.45,.18,-11,'near',.97,'fixed',2,motion(14,3,18,14,3)),
@@ -21,7 +21,7 @@ export const WORLD_CONFIGS=Object.freeze({
     object('heartCardFar','procedural:heart-card',.12,.23,-3.4,.14,-7,'mid',.82,'fixed',2,motion(16,8,10,8)),
     object('crownHint','procedural:crown',.84,.37,-5.1,.28,5,'far',.36,'fixed',3,motion(18,2,5,5))
   ]},
-  world03:{id:'03',title:'LOST IN TIME',density:.40,palette:{sepia:'#8A7052',bronze:'#9A7448',stone:'#77736B',ivory:'#EFE5D1',gold:'#B39355'},objects:[
+  world03:{id:'03',title:'THROUGH THE CHESSBOARD',density:.40,palette:{sepia:'#8A7052',bronze:'#9A7448',stone:'#77736B',ivory:'#EFE5D1',gold:'#B39355'},objects:[
     object('clockHero','procedural:antique-clock',.08,.38,-3.4,.50,-8,'mid',.86,'y-axis',1,motion(14,1,9,11)),
     object('clockSmall','procedural:antique-clock',.90,.20,-4.8,.12,6,'far',.58,'y-axis',2,motion(16,.25,5,6)),
     object('clockLarge','procedural:antique-clock',.89,.67,-2.35,.34,-8,'mid',.86,'y-axis',2,motion(18,2,10,12)),
