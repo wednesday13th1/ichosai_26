@@ -2,7 +2,7 @@ const NEUTRAL=Object.freeze({name:'Neutral',saturation:1,contrast:1,brightness:1
 export const CAMERA_FILTERS=Object.freeze({
   world01:{name:'DREAM FALL',saturation:.91,contrast:.97,brightness:1.01,sepia:.025,hue:-7,overlay:[91,116,139],overlayOpacity:.035,vignette:.075,haze:.015},
   world02:{name:'CRIMSON GARDEN',saturation:1.14,contrast:1.09,brightness:1.005,sepia:.055,hue:-6,overlay:[112,8,27],overlayOpacity:.075,vignette:.1,haze:.01},
-  world03:{name:'TIME SHIFT',saturation:.84,contrast:1.12,brightness:1.005,sepia:.065,hue:-4,overlay:[222,210,184],overlayOpacity:.035,vignette:.12,haze:0},
+  world03:{name:'TIME SHIFT',saturation:.88,contrast:1.08,brightness:1.01,sepia:.015,hue:-7,overlay:[112,138,160],overlayOpacity:.032,vignette:.09,haze:.008},
   world04:{name:'TEA DREAM',saturation:1.06,contrast:.96,brightness:1.055,sepia:.055,hue:-5,overlay:[231,183,169],overlayOpacity:.035,vignette:.055,haze:.035}
 });
 
