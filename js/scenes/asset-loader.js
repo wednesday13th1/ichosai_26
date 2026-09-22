@@ -5,15 +5,17 @@ export const MODEL_PATHS=Object.freeze({
   pocketWatch:'/assets/models/pocket-watch.glb',playingCard:'/assets/models/playing-card.glb',rose:'/assets/models/rose.glb',gear:'/assets/models/gear.glb',teapot:'/assets/models/teapot.glb',teacup:'/assets/models/teacup.glb'
 });
 
+export const OPTIONAL_ASSET_TIMEOUT=6000;
 const loader=new GLTFLoader(),cache=new Map();
 const bundledModels=import.meta.glob('/assets/models/*.{glb,gltf}',{eager:true,query:'?url',import:'default'});
 function cloneAsset(asset){return{scene:asset.scene.clone(true),animations:asset.animations||[]};}
-export function loadOptionalModel(key,{timeout=4500}={}){
+export function loadOptionalModel(key,{timeout=OPTIONAL_ASSET_TIMEOUT}={}){
   const sourcePath=MODEL_PATHS[key],url=bundledModels[sourcePath];if(!url)return Promise.resolve(null);if(cache.has(url))return cache.get(url).then(asset=>asset?cloneAsset(asset):null);
   const request=new Promise(resolve=>{let settled=false;const timer=setTimeout(()=>{if(!settled){settled=true;resolve(null);}},timeout);loader.load(url,gltf=>{if(settled)return;settled=true;clearTimeout(timer);resolve({scene:gltf.scene,animations:gltf.animations||[]});},undefined,()=>{if(settled)return;settled=true;clearTimeout(timer);resolve(null);});});
   cache.set(url,request);return request.then(asset=>asset?cloneAsset(asset):null);
 }
-export async function upgradeWithModel(holder,key,{scale=1,rotation=new THREE.Euler(),playAnimations=true}={}){const asset=await loadOptionalModel(key);if(!asset||!holder.parent)return false;const model=asset.scene;model.scale.setScalar(scale);model.rotation.copy(rotation);model.traverse(object=>{if(object.isMesh){object.castShadow=false;object.receiveShadow=false;}});holder.clear();holder.add(model);holder.userData.modelSource=MODEL_PATHS[key];if(playAnimations&&asset.animations.length){const mixer=new THREE.AnimationMixer(model);asset.animations.forEach(clip=>mixer.clipAction(clip).play());holder.userData.animationMixer=mixer;}return true;}
+function disposeDetached(children){children.forEach(child=>child.traverse(object=>{object.geometry?.dispose();const materials=object.material?(Array.isArray(object.material)?object.material:[object.material]):[];materials.forEach(material=>{material.map?.dispose();material.dispose();});}));}
+export async function upgradeWithModel(holder,key,{scale=1,rotation=new THREE.Euler(),playAnimations=true}={}){const asset=await loadOptionalModel(key);if(!asset||!holder.parent)return false;const model=asset.scene;model.scale.setScalar(scale);model.rotation.copy(rotation);model.traverse(object=>{if(object.isMesh){object.castShadow=false;object.receiveShadow=false;}});const fallbackChildren=[...holder.children];holder.clear();disposeDetached(fallbackChildren);holder.add(model);holder.userData.modelSource=MODEL_PATHS[key];if(playAnimations&&asset.animations.length){const mixer=new THREE.AnimationMixer(model);asset.animations.forEach(clip=>mixer.clipAction(clip).play());holder.userData.animationMixer=mixer;}return true;}
 export function updateModelAnimation(holder,delta){holder.userData.animationMixer?.update(delta);}
 export function disposeModelAnimation(holder){holder.userData.animationMixer?.stopAllAction();holder.userData.animationMixer?.uncacheRoot(holder.children[0]);delete holder.userData.animationMixer;}
 export function clearModelCache(){cache.clear();}
