@@ -1,7 +1,7 @@
 const NEUTRAL=Object.freeze({name:'Neutral',saturation:1,contrast:1,brightness:1,sepia:0,hue:0,overlay:[0,0,0],overlayOpacity:0,centerOpacity:0,vignette:.06,haze:0});
 export const CAMERA_FILTERS=Object.freeze({
   world01:{name:'DREAM FALL',saturation:.91,contrast:.97,brightness:1.01,sepia:.025,hue:-7,overlay:[91,116,139],overlayOpacity:.035,centerOpacity:0,vignette:.075,haze:.015},
-  world02:{name:'CRIMSON GARDEN',saturation:1.13,contrast:1.08,brightness:1.005,sepia:.08,hue:-7,overlay:[120,0,20],overlayOpacity:.14,centerOpacity:.045,vignette:.12,haze:.006},
+  world02:{name:'CRIMSON GARDEN',saturation:1.16,contrast:1.09,brightness:1.005,sepia:.09,hue:-8,overlay:[105,0,20],overlayOpacity:.27,centerOpacity:.08,vignette:.14,haze:.004},
   world03:{name:'TIME SHIFT',saturation:.88,contrast:1.08,brightness:1.01,sepia:.015,hue:-7,overlay:[112,138,160],overlayOpacity:.032,centerOpacity:0,vignette:.09,haze:.008},
   world04:{name:'TEA DREAM',saturation:1.06,contrast:.96,brightness:1.055,sepia:.055,hue:-5,overlay:[231,183,169],overlayOpacity:.035,centerOpacity:0,vignette:.055,haze:.035}
 });

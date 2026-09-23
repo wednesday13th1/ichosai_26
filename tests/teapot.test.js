@@ -4,7 +4,7 @@ import {createTeapot} from '../js/objects.js';
 
 test('teapot is one rigid named group with every visible component attached',()=>{
   const pot=createTeapot();
-  const lidGroup=pot.getObjectByName('LidGroup');
+  const lidGroup=pot.getObjectByName('LidRoot');
   assert.equal(pot.name,'TeapotRoot');
   assert.deepEqual(['Body','Spout','Handle'].map(name=>pot.getObjectByName(name)?.parent),Array(3).fill(pot));
   assert.equal(lidGroup.parent,pot);
@@ -29,7 +29,14 @@ test('Tea Party porcelain stays warm and matte instead of flat white',()=>{
 });
 
 test('animating the teapot root never changes component-local transforms',()=>{
-  const pot=createTeapot(),parts=['Body','LidGroup','Spout','Handle'].map(name=>pot.getObjectByName(name)),before=parts.map(part=>({position:part.position.toArray(),rotation:part.rotation.toArray()}));
+  const pot=createTeapot(),parts=['Body','LidRoot','Spout','Handle'].map(name=>pot.getObjectByName(name)),before=parts.map(part=>({position:part.position.toArray(),rotation:part.rotation.toArray()}));
   pot.position.set(.3,.2,-2);pot.rotation.set(.1,Math.PI,.2);pot.scale.setScalar(.7);pot.updateMatrixWorld(true);
   parts.forEach((part,index)=>{assert.deepEqual(part.position.toArray(),before[index].position);assert.deepEqual(part.rotation.toArray(),before[index].rotation);});
+});
+
+test('spout and both handle ends overlap the body attachment envelope',()=>{
+  const pot=createTeapot(),bounds=pot.userData.attachmentBounds;
+  assert.ok(bounds.spout.min.x<bounds.body.max.x);
+  assert.ok(bounds.handle.max.x>bounds.body.min.x);
+  assert.ok(bounds.handle.min.y<0&&bounds.handle.max.y>0);
 });
