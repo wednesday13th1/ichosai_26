@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createPocketClock,createTeaCup} from '../js/objects.js';
+import {createPocketClock,createRose,createTeaCup} from '../js/objects.js';
 import {createWorld03} from '../js/scenes/world03.js';
 
 const gradient={addColorStop(){}};
@@ -27,6 +27,11 @@ test('cup and saucer share one stable root and opening marker',()=>{
   assert.equal(cup.getObjectByName('Cup')?.parent,cup);
   assert.equal(cup.getObjectByName('Saucer')?.parent,cup);
   assert.equal(cup.userData.opening?.parent,cup);
+});
+
+test('Victorian rose uses layered burgundy petals with matte materials',()=>{
+  const rose=createRose(),colors=new Set(),roughness=[];rose.traverse(object=>{if(object.material){colors.add(object.material.color.getHex());roughness.push(object.material.roughness);}});
+  assert.equal(rose.name,'RoseRoot');assert.ok(colors.size>=4);assert.ok(roughness.every(value=>value>=.7));
 });
 
 test('Chess world contains floating pieces without a board or platform',()=>{
