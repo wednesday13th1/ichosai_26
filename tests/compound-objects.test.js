@@ -38,3 +38,10 @@ test('Chess world contains floating pieces without a board or platform',()=>{
   pieces.forEach((piece,index)=>{assert.equal(piece.position.x,before[index].x);assert.equal(piece.position.z,before[index].z);});
   world.dispose();
 });
+
+test('Chess animation remains bounded and deterministic after five minutes',()=>{
+  const world=createWorld03(),pieces=[];world.root.traverse(object=>{if(object.name?.startsWith('ChessPiece-')||object.name?.startsWith('ChessDiscovery-'))pieces.push(object);});
+  world.reset();world.update(300,.016,{theme:{animationSpeed:1}});
+  pieces.forEach(piece=>{const u=piece.userData;assert.ok(Math.abs(piece.position.y-u.base.y)<=u.floatAmplitude+.0001);assert.ok(piece.scale.x>=u.baseScale*(1-u.scaleAmplitude)-.0001);assert.ok(piece.scale.x<=u.baseScale*(1+u.scaleAmplitude)+.0001);assert.ok([piece.position.x,piece.position.y,piece.position.z,piece.scale.x,piece.quaternion.x,piece.quaternion.y,piece.quaternion.z,piece.quaternion.w].every(Number.isFinite));});
+  world.dispose();
+});
