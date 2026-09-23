@@ -20,3 +20,4 @@ test('time query creates a development-only mock date',()=>{assert.equal(resolve
 test('local time formatter emits a minute-precision value',()=>assert.match(formatLocalTime(at(9)),/^0?9:05$/));
 test('Tea Party remains warm after dark while Clock stays cool',()=>{const tea=Number.parseInt(TIME_THEME_PRESETS.night.worlds.world04.slice(1),16),clock=Number.parseInt(TIME_THEME_PRESETS.night.worlds.world01.slice(1),16);assert.ok(((tea>>16)&255)>(tea&255));assert.ok((clock&255)>((clock>>16)&255));});
 test('Queen stays crimson in morning and daytime themes',()=>{for(const name of ['morning','day']){const color=Number.parseInt(TIME_THEME_PRESETS[name].worlds.world02.slice(1),16),red=(color>>16)&255,green=(color>>8)&255,blue=color&255;assert.ok(red>green*3);assert.ok(red>blue*2);}});
+test('Tea Party keeps a warm morning tint',()=>{const color=Number.parseInt(TIME_THEME_PRESETS.morning.worlds.world04.slice(1),16),red=(color>>16)&255,blue=color&255;assert.ok(red>blue);});

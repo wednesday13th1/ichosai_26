@@ -15,3 +15,11 @@ test('pour origin is a child of the teapot and sits at the spout tip',()=>{
   assert.ok(origin.position.x>.49);
   assert.ok(origin.position.y>.28);
 });
+
+test('Tea Party porcelain stays warm and matte instead of flat white',()=>{
+  const pot=createTeapot(),body=pot.getObjectByName('Body'),knob=pot.getObjectByName('Knob');
+  assert.ok(body.material.roughness>=.55&&body.material.roughness<=.8);
+  assert.ok(body.material.metalness<=.2);
+  assert.ok(knob.material.roughness>=.55&&knob.material.metalness<=.2);
+  assert.ok(body.material.color.r>body.material.color.b);
+});
