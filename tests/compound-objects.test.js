@@ -32,7 +32,7 @@ test('cup and saucer share one stable root and opening marker',()=>{
 test('Chess world contains floating pieces without a board or platform',()=>{
   const world=createWorld03(),pieces=[];world.root.traverse(object=>{if(object.name?.startsWith('ChessPiece-')||object.name?.startsWith('ChessDiscovery-'))pieces.push(object);});
   assert.equal(world.root.getObjectByName('ChessFloor'),undefined);
-  assert.ok(pieces.length>=4&&pieces.length<=8);
+  assert.ok(pieces.length>=8&&pieces.length<=12);
   const before=pieces.map(piece=>piece.userData.base.clone());
   world.update(12,.016,{view:{yaw:Math.PI,pitch:.7},theme:{animationSpeed:1}});
   pieces.forEach((piece,index)=>{assert.equal(piece.position.x,before[index].x);assert.equal(piece.position.z,before[index].z);});
