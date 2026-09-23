@@ -1,5 +1,5 @@
 const WASM_BASE='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm';
-const MODEL_PATH='/assets/models/selfie_segmenter.tflite';
+const MODEL_PATH=`${import.meta.env.BASE_URL}assets/models/selfie_segmenter.tflite`;
 
 export const SEGMENTATION_SETTINGS=Object.freeze({inputSize:256,targetFps:15,slowFps:10,featherPx:1.6,disableAfterMs:165});
 
