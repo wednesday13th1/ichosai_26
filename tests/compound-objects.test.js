@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createPocketClock,createTeaCup} from '../js/objects.js';
+import {createWorld03} from '../js/scenes/world03.js';
 
 const gradient={addColorStop(){}};
 const context={fillRect(){},strokeRect(){},beginPath(){},arc(){},stroke(){},moveTo(){},lineTo(){},fillText(){},createRadialGradient(){return gradient;}};
@@ -26,4 +27,14 @@ test('cup and saucer share one stable root and opening marker',()=>{
   assert.equal(cup.getObjectByName('Cup')?.parent,cup);
   assert.equal(cup.getObjectByName('Saucer')?.parent,cup);
   assert.equal(cup.userData.opening?.parent,cup);
+});
+
+test('Chess world contains floating pieces without a board or platform',()=>{
+  const world=createWorld03(),pieces=[];world.root.traverse(object=>{if(object.name?.startsWith('ChessPiece-')||object.name?.startsWith('ChessDiscovery-'))pieces.push(object);});
+  assert.equal(world.root.getObjectByName('ChessFloor'),undefined);
+  assert.ok(pieces.length>=4&&pieces.length<=8);
+  const before=pieces.map(piece=>piece.userData.base.clone());
+  world.update(12,.016,{view:{yaw:Math.PI,pitch:.7},theme:{animationSpeed:1}});
+  pieces.forEach((piece,index)=>{assert.equal(piece.position.x,before[index].x);assert.equal(piece.position.z,before[index].z);});
+  world.dispose();
 });
