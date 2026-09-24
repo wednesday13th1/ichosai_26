@@ -1,7 +1,7 @@
 const NEUTRAL=Object.freeze({name:'Neutral',saturation:1,contrast:1,brightness:1,sepia:0,hue:0,overlay:[0,0,0],overlayOpacity:0,centerOpacity:0,vignette:.06,haze:0});
 export const CAMERA_FILTERS=Object.freeze({
   world01:{name:'WARM VINTAGE TIME',saturation:.94,contrast:1.04,brightness:1.02,sepia:.13,hue:-4,overlay:[165,112,65],overlayOpacity:.07,centerOpacity:.012,vignette:.11,haze:.018},
-  world02:{name:'VICTORIAN CRIMSON',saturation:1.2,contrast:1.1,brightness:1.005,sepia:.1,hue:-8,overlay:[87,11,24],overlayOpacity:.34,centerOpacity:.12,vignette:.18,haze:.004},
+  world02:{name:'VICTORIAN CRIMSON',saturation:1.26,contrast:1.12,brightness:1.005,sepia:.11,hue:-10,overlay:[87,11,24],overlayOpacity:.43,centerOpacity:.16,vignette:.23,haze:.004},
   world03:{name:'RETRO SURREAL',saturation:.96,contrast:.98,brightness:1.04,sepia:.08,hue:-5,overlay:[205,151,126],overlayOpacity:.055,centerOpacity:.008,vignette:.07,haze:.03}
 });
 
