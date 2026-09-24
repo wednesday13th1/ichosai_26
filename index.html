@@ -1,6 +1,22 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#090807"><meta name="description" content="教室に現れる Alice in Wonderland の空間WebAR体験。"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Italianno&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css"><link rel="icon" href="data:,"><title>Alice in Wonderland — Spatial AR</title></head>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#090807"><meta name="description" content="教室に現れる Alice in Wonderland の空間WebAR体験。"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Italianno&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/mobile-camera-ui.css"><link rel="icon" href="data:,"><title>Alice in Wonderland — Spatial AR</title></head>
 <body><main id="experience"><video id="camera" autoplay muted playsinline aria-hidden="true"></video><div id="camera-grade" aria-hidden="true"></div><div id="ar-layer" aria-hidden="true"></div>
 <section id="startup" class="startup" aria-labelledby="startup-title"><div class="startup-copy"><p>ALICE IN WONDERLAND</p><h1 id="startup-title">Step through<br>the looking glass.</h1><span>教室の中に、もうひとつの世界を。</span></div><button id="start-ar" class="start-button" type="button">ENTER WONDERLAND <i>→</i></button><p id="status" role="status" aria-live="polite">Rear camera and motion access are used only during this experience.</p></section>
-<div id="hud" hidden><i class="queen-ornament queen-ornament-left" aria-hidden="true">♥</i><i class="queen-ornament queen-ornament-right" aria-hidden="true">♥</i><header class="brand"><span>ALICE IN</span><strong>Wonderland</strong></header><button id="exit" type="button" aria-label="ARを終了">×</button><div class="scene-label"><span id="world-kicker">♛ QUEEN OF HEARTS</span><h2 id="world-title">QUEEN OF HEARTS</h2><small id="time-theme-label">DAY WONDERLAND</small><small id="world-timer">NEXT WORLD · 01:30</small></div><small id="recording-status" hidden>REC 00:00</small><button id="thumbnail" type="button" aria-label="最後の写真"><span></span></button><button id="shutter" type="button" aria-label="タップで写真、長押しで動画"><span></span></button><button id="flip-camera" type="button" aria-label="前後カメラ切替">↻</button></div>
+<div id="hud" hidden>
+  <i class="corner-fragment corner-fragment-left" aria-hidden="true"></i><i class="corner-fragment corner-fragment-right" aria-hidden="true"></i>
+  <header class="brand"><span>ALICE IN</span><strong>Wonderland</strong></header>
+  <button id="exit" type="button" aria-label="ARを終了">×</button>
+  <div class="scene-label" aria-live="polite">
+    <span id="world-kicker">WONDERLAND COURT</span>
+    <h2 id="world-title">QUEEN OF HEARTS</h2>
+    <small id="world-subtitle"></small>
+    <i class="scene-divider" aria-hidden="true"></i>
+  </div>
+  <div class="world-progress" aria-hidden="true"><i id="world-progress-fill"></i></div>
+  <small id="world-timer">NEXT WORLD · 01:30</small>
+  <small id="recording-status" hidden>REC 00:00</small>
+  <button id="thumbnail" type="button" aria-label="最後の写真"><span aria-hidden="true"></span></button>
+  <button id="shutter" type="button" aria-label="タップで写真、長押しで動画"><span></span></button>
+  <button id="flip-camera" type="button" aria-label="前後カメラ切替"><span aria-hidden="true">↻</span></button>
+</div>
 <div id="flash" aria-hidden="true"></div><section id="photo-preview" hidden aria-label="撮影プレビュー"><img id="captured-photo" alt="Wonderland AR photo"><div><button id="retake" type="button">RETAKE</button><button id="save-photo" type="button">SAVE / SHARE</button></div></section></main><script type="module" src="/js/main.js"></script></body></html>
