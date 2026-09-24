@@ -22,10 +22,12 @@ test('clock hands rotate through centered pivots without translating their meshe
 });
 
 test('cup and saucer share one stable root and opening marker',()=>{
-  const cup=createTeaCup();
+  const cup=createTeaCup(),handle=cup.getObjectByName('CupHandle');
   assert.equal(cup.name,'CupRoot');
   assert.equal(cup.getObjectByName('Cup')?.parent,cup);
   assert.equal(cup.getObjectByName('Saucer')?.parent,cup);
+  assert.equal(handle?.parent,cup);
+  assert.ok(handle.userData.attachmentPoints.every(point=>point.x<.185));
   assert.equal(cup.userData.opening?.parent,cup);
 });
 
