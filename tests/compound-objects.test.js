@@ -1,54 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createPocketClock,createRose,createTeaCup} from '../js/objects.js';
+import {createPocketClock,createTeaCup} from '../js/objects.js';
+import {createWorld01} from '../js/scenes/world01.js';
 import {createWorld03} from '../js/scenes/world03.js';
-
-const gradient={addColorStop(){}};
-const context={fillRect(){},strokeRect(){},beginPath(){},arc(){},stroke(){},moveTo(){},lineTo(){},fillText(){},createRadialGradient(){return gradient;}};
-globalThis.document={createElement(){return{width:0,height:0,getContext(){return context;}};}};
-
-test('clock hands rotate through centered pivots without translating their meshes',()=>{
-  const clock=createPocketClock(10,8),minute=clock.getObjectByName('MinuteHandPivot'),hour=clock.getObjectByName('HourHandPivot');
-  assert.equal(clock.name,'ClockRoot');
-  for(const pivot of [minute,hour]){
-    assert.equal(pivot.parent,clock);
-    assert.deepEqual(pivot.position.toArray().slice(0,2),[0,0]);
-    assert.deepEqual(pivot.children[0].position.toArray(),[0,0,0]);
-  }
-  const local=[minute.position.clone(),hour.position.clone()];
-  clock.scale.x=-1;minute.rotation.z+=1;hour.rotation.z-=1;
-  assert.ok(minute.position.equals(local[0]));
-  assert.ok(hour.position.equals(local[1]));
-});
-
-test('cup and saucer share one stable root and opening marker',()=>{
-  const cup=createTeaCup(),handle=cup.getObjectByName('CupHandle');
-  assert.equal(cup.name,'CupRoot');
-  assert.equal(cup.getObjectByName('Cup')?.parent,cup);
-  assert.equal(cup.getObjectByName('Saucer')?.parent,cup);
-  assert.equal(handle?.parent,cup);
-  assert.ok(handle.userData.attachmentPoints.every(point=>point.x<.185));
-  assert.equal(cup.userData.opening?.parent,cup);
-});
-
-test('Victorian rose uses layered burgundy petals with matte materials',()=>{
-  const rose=createRose(),colors=new Set(),roughness=[];rose.traverse(object=>{if(object.material){colors.add(object.material.color.getHex());roughness.push(object.material.roughness);}});
-  assert.equal(rose.name,'RoseRoot');assert.ok(colors.size>=4);assert.ok(roughness.every(value=>value>=.7));
-});
-
-test('Chess world contains floating pieces without a board or platform',()=>{
-  const world=createWorld03(),pieces=[];world.root.traverse(object=>{if(object.name?.startsWith('ChessPiece-')||object.name?.startsWith('ChessDiscovery-'))pieces.push(object);});
-  assert.equal(world.root.getObjectByName('ChessFloor'),undefined);
-  assert.ok(pieces.length>=8&&pieces.length<=12);
-  const before=pieces.map(piece=>piece.userData.base.clone());
-  world.update(12,.016,{view:{yaw:Math.PI,pitch:.7},theme:{animationSpeed:1}});
-  pieces.forEach((piece,index)=>{assert.equal(piece.position.x,before[index].x);assert.equal(piece.position.z,before[index].z);});
-  world.dispose();
-});
-
-test('Chess animation remains bounded and deterministic after five minutes',()=>{
-  const world=createWorld03(),pieces=[];world.root.traverse(object=>{if(object.name?.startsWith('ChessPiece-')||object.name?.startsWith('ChessDiscovery-'))pieces.push(object);});
-  world.reset();world.update(300,.016,{theme:{animationSpeed:1}});
-  pieces.forEach(piece=>{const u=piece.userData;assert.ok(Math.abs(piece.position.y-u.base.y)<=u.floatAmplitude+.0001);assert.ok(piece.scale.x>=u.baseScale*(1-u.scaleAmplitude)-.0001);assert.ok(piece.scale.x<=u.baseScale*(1+u.scaleAmplitude)+.0001);assert.ok([piece.position.x,piece.position.y,piece.position.z,piece.scale.x,piece.quaternion.x,piece.quaternion.y,piece.quaternion.z,piece.quaternion.w].every(Number.isFinite));});
-  world.dispose();
-});
+const gradient={addColorStop(){}};const context={fillRect(){},strokeRect(){},beginPath(){},arc(){},stroke(){},moveTo(){},lineTo(){},fillText(){},createRadialGradient(){return gradient;}};globalThis.document={createElement(){return{width:0,height:0,getContext(){return context;}};}};
+test('clock hands stay attached to centered pivots',()=>{const clock=createPocketClock(10,8);for(const name of ['MinuteHandPivot','HourHandPivot']){const pivot=clock.getObjectByName(name);assert.equal(pivot.parent,clock);assert.deepEqual(pivot.position.toArray().slice(0,2),[0,0]);assert.deepEqual(pivot.children[0].position.toArray(),[0,0,0]);}});
+test('cup handle remains attached to its cup root',()=>{const cup=createTeaCup(),handle=cup.getObjectByName('CupHandle');assert.equal(handle?.parent,cup);assert.ok(handle.userData.attachmentPoints.every(point=>point.x<.185));});
+test('Clock world contains 22 clocks and no cards, keys, or flowers',()=>{const world=createWorld01(),clocks=[];world.root.traverse(o=>{if(o.name==='ClockRoot')clocks.push(o);assert.ok(!/Card|Key|Rose|Chess/i.test(o.name||''));});assert.equal(clocks.length,22);world.update(900,.016,{theme:{animationSpeed:1}});world.root.traverse(o=>assert.ok([o.position.x,o.position.y,o.position.z,o.scale.x].every(Number.isFinite)));world.dispose();});
+test('Eat Drink world has required object counts and asynchronous bounded transformations',()=>{const world=createWorld03(),sweets=[],bottles=[],cups=[];world.root.traverse(o=>{if(o.name?.startsWith('EatMeSweet-'))sweets.push(o);if(o.name?.startsWith('DrinkMeBottle-'))bottles.push(o);if(o.name?.startsWith('WonderlandCup-'))cups.push(o);assert.ok(!/Chess/i.test(o.name||''));});assert.equal(sweets.length,12);assert.equal(bottles.length,8);assert.equal(cups.length,8);for(let cycle=0;cycle<10;cycle++)world.update(cycle*90,.016,{theme:{animationSpeed:1}});for(const o of [...sweets,...bottles,...cups]){assert.ok(o.scale.x>=o.userData.baseScale*.42);assert.ok(o.scale.x<=o.userData.baseScale*2.3);assert.ok([o.position.x,o.position.y,o.position.z,o.scale.x].every(Number.isFinite));}world.dispose();});

@@ -3,7 +3,6 @@ import {createSceneManager,SceneType} from './scene-manager.js';
 import {createWorld01} from './scenes/world01.js';
 import {createWorld02} from './scenes/world02.js';
 import {createWorld03} from './scenes/world03.js';
-import {createWorld04} from './scenes/world04.js';
 import {getTimeTheme} from './time-theme.js';
 import {performanceTier,qualitySettings} from './scenes/composition.js';
 import {createPersonSegmentation,drawCover,SEGMENTATION_SETTINGS} from './person-segmentation.js';
@@ -16,7 +15,7 @@ export function createARLayer(container,onContextLost,interaction,onTracking=()=
   const hazeCanvas=document.createElement('canvas');hazeCanvas.width=hazeCanvas.height=128;const hazeContext=hazeCanvas.getContext('2d'),hazeGradient=hazeContext.createRadialGradient(64,64,4,64,64,64);hazeGradient.addColorStop(0,'rgba(255,255,255,.72)');hazeGradient.addColorStop(1,'rgba(255,255,255,0)');hazeContext.fillStyle=hazeGradient;hazeContext.fillRect(0,0,128,128);const hazeMaterial=new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(hazeCanvas),color:0xffffff,transparent:true,opacity:.04,depthWrite:false,blending:THREE.AdditiveBlending}),haze=new THREE.Mesh(new THREE.PlaneGeometry(8.5,5.7),hazeMaterial);haze.position.set(0,.25,-7.2);worldStage.add(haze);
   const hemi=new THREE.HemisphereLight(0xf4e9d2,0x241d1b,1.35),key=new THREE.DirectionalLight(0xffe8cb,1.45),rim=new THREE.DirectionalLight(0xc8d5f0,.25);key.position.set(-2.5,5,2.5);rim.position.set(3,2,-2);key.castShadow=true;key.shadow.mapSize.set(1024,1024);scene.add(hemi,key,rim);
   const shadow=new THREE.Mesh(new THREE.CircleGeometry(3.8,48),new THREE.ShadowMaterial({color:0x090706,opacity:.2}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.006;shadow.receiveShadow=true;worldAnchor.add(shadow);
-  const worlds={world01:createWorld01(),world02:createWorld02(),world03:createWorld03(),world04:createWorld04()};Object.values(worlds).forEach(world=>{world.root.visible=false;world.root.userData.quality=quality;worldStage.add(world.root);});
+  const worlds={world01:createWorld01(),world02:createWorld02(),world03:createWorld03()};Object.values(worlds).forEach(world=>{world.root.visible=false;world.root.userData.quality=quality;worldStage.add(world.root);});
   const manager=createSceneManager(worlds),segmentation=video?createPersonSegmentation(video):null;let active=false,paused=false,previous=0,elapsed=0,xrSession=null,viewerSpace=null,hitTestSource=null,hitPose=null,placed=false,currentTheme=getTimeTheme(),cameraMirrored=false,frameWindowStart=performance.now(),frameCount=0,renderFps=0;
   function applyTheme(event){const theme=event.detail||event;currentTheme=theme;hemi.color.setHex(theme.sky);hemi.groundColor.setHex(theme.ground);key.color.setHex(theme.key);key.intensity=theme.keyIntensity;rim.color.set(theme.ui);rim.intensity=theme.rimIntensity;shadow.material.opacity=theme.shadowOpacity;hazeMaterial.color.set(theme.accent);hazeMaterial.opacity=theme.hazeOpacity;manager.setTheme(theme);}
   applyTheme(currentTheme);document.documentElement.addEventListener('wonderlandthemechange',applyTheme);
